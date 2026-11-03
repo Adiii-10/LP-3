@@ -1,0 +1,75 @@
+#include <iostream>
+#include <algorithm>
+#include <iomanip>
+using namespace std;
+
+struct Item {
+    int weight, profit;
+    double ratio;
+};
+
+bool compare(Item a, Item b) {
+    return a.ratio > b.ratio;
+}
+
+int main() {
+    int n, capacity;
+    double totalProfit = 0;
+
+    cout << "Enter number of items: ";
+    cin >> n;
+
+    Item items[n];
+
+    for (int i = 0; i < n; i++) {
+        cout << "Enter weight and profit of item "
+             << i + 1 << ": ";
+        cin >> items[i].weight >> items[i].profit;
+
+        items[i].ratio =
+            (double)items[i].profit / items[i].weight;
+    }
+
+    cout << "Enter knapsack capacity: ";
+    cin >> capacity;
+
+    sort(items, items + n, compare);
+
+    cout << fixed << setprecision(2);
+    cout << "\nSelected Items:\n";
+
+    for (int i = 0; i < n; i++) {
+        if (capacity == 0)
+            break;
+
+        if (items[i].weight <= capacity) {
+            capacity -= items[i].weight;
+            totalProfit += items[i].profit;
+
+            cout << "Weight Taken: " << items[i].weight
+                 << ", Profit: " << items[i].profit << "\n";
+        } else {
+            double fraction =
+                (double)capacity / items[i].weight;
+
+            double profitEarned =
+                items[i].profit * fraction;
+
+            cout << "Weight Taken: " << capacity
+                 << ", Profit: " << profitEarned << "\n";
+
+            cout << "Calculation: "
+                 << items[i].profit << " * "
+                 << capacity << " / "
+                 << items[i].weight << " = "
+                 << profitEarned << "\n";
+
+            totalProfit += profitEarned;
+            capacity = 0;
+        }
+    }
+
+    cout << "\nMaximum Profit: " << totalProfit << endl;
+
+    return 0;
+}
