@@ -1,0 +1,58 @@
+                            Practical List of LP3
+
+Group A – Design and Analysis of Algorithms
+
+•	DAA-1: Write a non-recursive and a recursive program to calculate Fibonacci numbers and analyze their time and space complexity.
+
+•	DAA-2: Implement job sequencing with deadlines using a greedy method.
+
+•	DAA-3: Write a program to implement Huffman Encoding using a greedy strategy.
+
+•	DAA-4: Write a program to solve a fractional Knapsack problem using a greedy method.
+
+•	DAA-5: Write a program to solve a 0-1 Knapsack problem using dynamic programming or branch and bound strategy.
+Group B – Machine Learning
+
+
+*****
+•	ML-1: Given a bank customer, build a neural network-based classifier that can determine whether they will leave or not in the next 6 months. 
+oDataset: Kaggle bank customer churn (10,000 samples, 14 features such as CustomerId, CreditScore, Geography, Gender, Age, Tenure, Balance). Link: https://www.kaggle.com/barelydedicated/bank-customer-churn-modeling
+Steps: 
+1.Read the dataset.
+2.Separate the feature and target sets, and split into training and test sets.
+3.Normalize the train and test data.
+4.Initialize and build the model. Identify points of improvement and implement them.
+5.Print the accuracy score and confusion matrix (5 points).
+
+
+•	ML-2: Classify emails using binary classification: Normal State (Not Spam) and Abnormal State (Spam). Use K-Nearest Neighbors and Support Vector Machine, and analyze their performance. 
+Dataset: emails.csv on Kaggle. Link: https://www.kaggle.com/datasets/balaka18/email-spam-classification-dataset-csv
+
+
+•	ML-3: Implement the K-Nearest Neighbors algorithm on the diabetes.csv dataset. Compute the confusion matrix, accuracy, error rate, precision and recall. 
+Dataset link: https://www.kaggle.com/datasets/abdallamahgoub/diabetes
+
+
+•	ML-4: Implement K-Means or hierarchical clustering on the sales_data_sample.csv dataset. Determine the number of clusters using the elbow method. 
+Dataset link: https://www.kaggle.com/datasets/kyanyoga/sample-sales-data
+
+
+•	ML-5: Implement the Gradient Descent algorithm to find the local minima of a function. For example, find the local minima of y = (x+3)² starting from x = 2.
+
+
+
+*****
+Group C – Blockchain Technology
+•	BC-1: Install Metamask and study spending Ether per transaction.
+
+•	BC-2: Create your own wallet using Metamask for crypto transactions.
+
+•	BC-3: Write a smart contract on a test network for a customer’s bank account with these operations: 
+Deposit money
+Withdraw money
+Show balance
+
+•	BC-4: Write a survey report on types of Blockchains and their real-time use cases.
+
+•	BC-5: Write a program to create a Business Network using Hyperledger.
+
