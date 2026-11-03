@@ -1,0 +1,637 @@
+import pandas as pd
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.svm import SVC
+from sklearn.metrics import accuracy_score
+
+df = pd.read_csv('emails.csv')
+y = df.iloc[:, -1]
+X = df.iloc[:, :-1].drop(columns=['Email No.'], errors='ignore')
+
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y, test_size=0.2, random_state=42, stratify=y
+)
+scaler = StandardScaler()
+X_train = scaler.fit_transform(X_train)
+X_test = scaler.transform(X_test)
+
+knn = KNeighborsClassifier(n_neighbors=5)
+knn.fit(X_train, y_train)
+knn_pred = knn.predict(X_test)
+
+svm = SVC(kernel='linear')
+svm.fit(X_train, y_train)
+svm_pred = svm.predict(X_test)
+
+print('KNN Accuracy:', accuracy_score(y_test, knn_pred))
+print('SVM Accuracy:', accuracy_score(y_test, svm_pred))
+
+
+
+*****
+
+
+
+•ML-2: Classify emails using binary classification: Normal State (Not Spam) and Abnormal State (Spam). Use K-Nearest Neighbors and Support Vector Machine, and analyze their performance. 
+Dataset: emails.csv on Kaggle. Link: https://www.kaggle.com/datasets/balaka18/email-spam-classification-dataset-csv
+
+
+
+
+*****
+
+
+
+
+# ==============================================================================
+# SECTION 1: LIBRARY IMPORTS
+# ==============================================================================
+
+# pandas: Used for data handling, tabular operations, and reading CSV files into DataFrames.
+import pandas as pd
+
+# train_test_split: Splits data into random train and test subsets to assess generalizability.
+from sklearn.model_selection import train_test_split
+
+# StandardScaler: Standardizes features by removing the mean and scaling to unit variance (z-score).
+# Critical for distance-based algorithms like KNN and margin-based algorithms like SVM.
+from sklearn.preprocessing import StandardScaler
+
+# KNeighborsClassifier: Instance-based (lazy) learner that classifies based on the k closest training points.
+from sklearn.neighbors import KNeighborsClassifier
+
+# SVC: Support Vector Classifier; finds an optimal separating hyperplane maximizing the geometric margin.
+from sklearn.svm import SVC
+
+# accuracy_score: Evaluates model performance by computing the fraction of correct classifications.
+from sklearn.metrics import accuracy_score
+
+
+# ==============================================================================
+# SECTION 2: DATA LOADING & PREPARATION
+# ==============================================================================
+
+# Load email feature dataset (typically word frequency counts for spam classification)
+df = pd.read_csv('emails.csv')
+
+# Extract ground-truth labels: The last column indicates class (e.g., 1 = Spam, 0 = Not Spam)
+y = df.iloc[:, -1]
+
+# Extract feature matrix: Select all columns except the last one, and drop the identifier column 'Email No.'
+# errors='ignore' ensures safe execution even if 'Email No.' is already absent
+X = df.iloc[:, :-1].drop(columns=['Email No.'], errors='ignore')
+
+
+# ==============================================================================
+# SECTION 3: TRAIN-TEST SPLIT
+# ==============================================================================
+
+# Split dataset into 80% training and 20% testing sets.
+# - test_size=0.2: Reserves 20% of samples for evaluation.
+# - random_state=42: Seeds the pseudo-random generator to guarantee reproducible splits.
+# - stratify=y: Maintains identical class proportions across both training and test sets.
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y, test_size=0.2, random_state=42, stratify=y
+)
+
+
+# ==============================================================================
+# SECTION 4: FEATURE SCALING
+# ==============================================================================
+
+# Distance-based models (KNN) and maximum-margin models (SVM) are sensitive to feature scales.
+# Unscaled word frequencies with larger magnitudes would otherwise dominate distance computations.
+scaler = StandardScaler()
+
+# Compute mean and variance on training data, then standardize X_train
+X_train = scaler.fit_transform(X_train)
+
+# Transform test data using the parameters (mean, std) learned strictly from X_train (prevents data leakage)
+X_test = scaler.transform(X_test)
+
+
+# ==============================================================================
+# SECTION 5: K-NEAREST NEIGHBORS (KNN)
+# ==============================================================================
+
+# Initialize KNN model using the 5 nearest neighbors (Euclidean distance by default)
+knn = KNeighborsClassifier(n_neighbors=5)
+
+# "Fit" KNN: Stores training points in memory (KNN is a lazy learner; no explicit parameters learned here)
+knn.fit(X_train, y_train)
+
+# Predict class labels for test samples by querying the 5 closest training points per sample
+knn_pred = knn.predict(X_test)
+
+
+# ==============================================================================
+# SECTION 6: SUPPORT VECTOR MACHINE (SVM)
+# ==============================================================================
+
+# Initialize SVM with a linear decision boundary (kernel='linear')
+# Finds the hyperplane w^T * x + b = 0 that maximizes the margin between spam and non-spam classes
+svm = SVC(kernel='linear')
+
+# Solve quadratic programming optimization problem to find support vectors and weights
+svm.fit(X_train, y_train)
+
+# Predict labels for test samples based on which side of the linear hyperplane they fall
+svm_pred = svm.predict(X_test)
+
+
+# ==============================================================================
+# SECTION 7: EVALUATION & REPORTING
+# ==============================================================================
+
+# Compute and display overall prediction accuracy for both classifiers
+print('KNN Accuracy:', accuracy_score(y_test, knn_pred))
+print('SVM Accuracy:', accuracy_score(y_test, svm_pred))
+
+
+
+*****
+
+
+
+11. Time and Space Complexity
+Let:
+- \(N\) = Number of training samples.
+- \(M\) = Number of testing samples.
+- \(D\) = Number of input features.
+- \(K\) = Number of nearest neighbors (5).
+A. KNN Complexity
+Operation	Time Complexity
+Training	\(O(1)\) model-building time, excluding data storage
+Prediction	\(O(MND)\)
+Space	\(O(ND)\)
+
+KNN calculates distances between each test sample and all training samples, making prediction expensive for large datasets.
+B. SVM Complexity
+For the given linear SVM:
+Operation	Complexity
+Training	Depends on the solver and data; no single tight bound applies
+Prediction	Approximately \(O(MSD)\)
+Space	Approximately \(O(SD)\) for support vectors
+
+Here, \(S\) is the number of support vectors. Linear SVM training can be efficient, but its actual cost depends on the optimization solver and dataset.
+Practical Exam Answer
+- KNN: Training \(O(1)\) excluding storage; prediction \(O(MND)\); space \(O(ND)\).
+- Linear SVM: Training complexity is solver-dependent; prediction approximately \(O(MSD)\); support-vector storage approximately \(O(SD)\).
+
+
+
+*****
+
+
+
+# Practical: Email Spam Classification Using K-Nearest Neighbors (KNN) and Support Vector Machine (SVM)
+
+## 1. Aim
+
+To classify emails into two categories, Normal (Not Spam) and Abnormal (Spam), using K-Nearest Neighbors (KNN) and Support Vector Machine (SVM) algorithms and compare their performance using accuracy.
+
+## 2. Theory
+
+### 2.1 What is Email Spam Classification?
+
+Email spam classification is the process of identifying whether an incoming email is legitimate or unwanted.
+
+It is a binary classification problem in which emails are classified into two categories:
+
+- Normal Email (0): A legitimate email containing useful or expected information.
+- Spam Email (1): An unwanted email containing advertisements, suspicious links or misleading information.
+
+Machine learning algorithms analyze email features and learn patterns to distinguish spam emails from normal emails.
+
+### 2.2 What is Machine Learning?
+
+Machine Learning is a branch of Artificial Intelligence that enables computers to learn patterns from data and make predictions without being explicitly programmed for every situation.
+
+In this practical, supervised machine learning algorithms are used because the dataset contains previously labelled emails.
+
+Types of Machine Learning:
+
+1. Supervised Learning
+2. Unsupervised Learning
+3. Reinforcement Learning
+
+This practical uses Supervised Learning – Classification.
+
+### 2.3 What is K-Nearest Neighbors (KNN)?
+
+K-Nearest Neighbors (KNN) is a supervised machine learning algorithm used for classification and regression.
+
+It classifies a new data point based on the classes of its nearest neighboring data points.
+
+KNN assumes that similar data points are located close to each other in the feature space.
+
+Working of KNN:
+
+1. Choose the value of K, representing the number of nearest neighbors.
+2. Calculate the distance between the new data point and existing training points.
+3. Identify the K nearest neighbors.
+4. Count the class labels of the selected neighbors.
+5. Assign the majority class to the new data point.
+
+[K-Nearest Neighbors (KNN): A Simple Yet Powerful Machine Learning Algorithm | by SamriddhiRuhela | Medium](https://images.openai.com/static-rsc-4/-UxuLGqx3F4IE4CFtz2MBhNlq5tNtY98hggMQbLO19QRdY5RfG5ZJ55iRNjG9VPDm1L1vVsQ8h4BdbhUw0HJITBhjbjxl4KdrH_AzCLyTy_sVlbze_M1nYkPoaIiQwiIDfr7GZCjPPeST4Ubd1kgYHzfuWYp-unUPbJKlIq-WUQ?purpose=inline)
+
+[medium.com](https://medium.com/%40ruhelasamridhi/k-nearest-neighbors-knn-a-simple-yet-powerful-machine-learning-algorithm-c3a3bd83057a?utm_source=chatgpt.com)
+
+### 2.4 Distance Calculation in KNN
+
+KNN commonly uses Euclidean distance to calculate the distance between two data points.
+
+Formula:
+
+\\[ d(p,q)=\sqrt{\sum\_{i=1}^{n}(p_i-q_i)^2} \\]
+
+Where:
+
+- \\(p\\) and \\(q\\) are two data points.
+- \\(n\\) is the number of features.
+- \\(p_i,q_i\\) are feature values.
+
+The data points with the smallest distances are considered the nearest neighbors.
+
+In this practical: `n_neighbors=5` means the algorithm considers the five nearest training samples to classify an email.
+
+For example, if the five nearest emails contain:
+
+- 3 Spam emails
+- 2 Normal emails
+
+The new email is classified as Spam because it receives the majority vote.
+
+### 2.5 What is Support Vector Machine (SVM)?
+
+Support Vector Machine (SVM) is a supervised machine learning algorithm mainly used for classification and regression.
+
+It finds the best decision boundary, called a hyperplane, that separates different classes of data.
+
+The main objective of SVM is to maximize the margin between the two classes.
+
+Important terms:
+
+1. Hyperplane: A decision boundary that separates different classes.
+2. Support Vectors: Data points closest to the hyperplane.
+3. Margin: Distance between the hyperplane and the nearest data points from both classes.
+4. Kernel: A function used to handle non-linear relationships by transforming data into another feature space.
+
+[Support Vector Machine (SVM) in Python](https://images.openai.com/static-rsc-4/bOrUmqIBBtW53BQeRnCs19VXwqNBetwyxTwH9K7PXWBFH6P7_eiSpUA_qb1__4Fc5MA4drRqDxbyuiTd-9qlLwemdysgqILU9fKFFEmRyzfRwFCGcys16DBtCO103NgCbK20NEcvn0LMhLIB91h_z7BIegxlAxx3FAJhJhKw9sg?purpose=inline)
+
+[reneshbedre.com](https://www.reneshbedre.com/blog/support-vector-machine.html?utm_source=chatgpt.com)
+
+### 2.6 Working of SVM
+
+1. SVM takes labelled training data as input.
+2. It identifies possible decision boundaries separating the classes.
+3. It finds the hyperplane that maximizes the margin.
+4. The nearest data points are identified as support vectors.
+5. The trained model uses this boundary to classify new emails.
+6. The email is assigned to either Spam or Normal class.
+
+### 2.7 Linear SVM
+
+In the given program:
+
+```
+svm = SVC(kernel='linear')
+```
+
+The `linear` kernel is used to create a straight decision boundary in the feature space.
+
+It is suitable when the classes can be separated reasonably well using a linear boundary.
+
+## 3. Dataset Description
+
+The practical uses the `emails.csv` dataset, which contains email-related features and a target class.
+
+Each row represents an email, and columns represent features extracted from the email.
+
+The dataset commonly contains word-frequency features such as:
+
+| Feature                    | Description                                               |
+| -------------------------- | --------------------------------------------------------- |
+| Email No.                  | Unique email identifier.                                  |
+| word_freq_make             | Frequency of the word "make".                             |
+| word_freq_free             | Frequency of the word "free".                             |
+| word_freq_money            | Frequency of the word "money".                            |
+| word_freq_offer            | Frequency of the word "offer".                            |
+| word_freq_credit           | Frequency of the word "credit".                           |
+| char_freq\_!               | Frequency of the exclamation mark.                        |
+| capital_run_length_average | Average length of uninterrupted capital-letter sequences. |
+| Class                      | Target variable indicating Spam or Normal email.          |
+
+The exact features depend on the provided dataset.
+
+Target variable: The last column represents the class label, indicating whether the email is spam or not spam.
+
+## 4. Important Concepts Used in the Program
+
+### 4.1 Data Preprocessing
+
+Data preprocessing is the process of converting raw data into a suitable format for machine learning algorithms.
+
+In this practical:
+
+- The dataset is loaded using Pandas.
+- The target column is separated from input features.
+- The email identifier is removed.
+- Data is divided into training and testing sets.
+- Features are standardized using StandardScaler.
+
+### 4.2 Feature Selection
+
+Feature selection involves selecting relevant input variables for training the machine learning model.
+
+In this practical:
+
+- `y` stores the target class.
+- `X` stores the email features.
+- `Email No.` is removed because it is only an identifier and does not provide meaningful information for classification.
+
+### 4.3 Train-Test Split
+
+The dataset is divided into two parts:
+
+- Training Data: Used to train the KNN and SVM models.
+- Testing Data: Used to evaluate the models on unseen emails.
+
+In this practical:
+
+| Parameter      | Value |
+| -------------- | ----- |
+| Training Data  | 80%   |
+| Testing Data   | 20%   |
+| Random State   | 42    |
+| Stratification | Yes   |
+
+Explanation:
+
+- `test_size=0.2` reserves 20% data for testing.
+- `random_state=42` ensures reproducibility.
+- `stratify=y` maintains the proportion of spam and normal emails in both sets.
+
+### 4.4 Feature Scaling using StandardScaler
+
+Feature scaling brings all numerical features to a comparable scale.
+
+It is especially important for KNN and SVM because both algorithms are influenced by feature magnitudes.
+
+Formula:
+
+\\[ Z=\frac{X-\mu}{\sigma} \\]
+
+Where:
+
+- \\(X\\) = Original feature value.
+- \\(\mu\\) = Mean of the feature.
+- \\(\sigma\\) = Standard deviation.
+- \\(Z\\) = Standardized value.
+
+Advantages of scaling:
+
+1. Prevents large-valued features from dominating distance calculations.
+2. Improves KNN classification performance.
+3. Helps SVM find an effective decision boundary.
+4. Improves numerical stability during model training.
+
+The scaler is fitted only on training data and then applied to testing data to prevent data leakage.
+
+## 5. Implementation of KNN and SVM
+
+### 5.1 KNN Classifier
+
+```
+knn = KNeighborsClassifier(n_neighbors=5)knn.fit(X_train, y_train)knn_pred = knn.predict(X_test)
+```
+
+Explanation:
+
+| Statement                | Description                                  |
+| ------------------------ | -------------------------------------------- |
+| `KNeighborsClassifier()` | Creates a KNN classification model.          |
+| `n_neighbors=5`          | Considers five nearest neighbors.            |
+| `fit()`                  | Stores the training data for classification. |
+| `predict()`              | Predicts the class labels of testing emails. |
+
+Important: KNN is a lazy learning algorithm because it does not build an explicit model during training. It stores the training samples and performs distance calculations during prediction.
+
+### 5.2 SVM Classifier
+
+```
+svm = SVC(kernel='linear')svm.fit(X_train, y_train)svm_pred = svm.predict(X_test)
+```
+
+Explanation:
+
+| Statement         | Description                                    |
+| ----------------- | ---------------------------------------------- |
+| `SVC()`           | Creates a Support Vector Classification model. |
+| `kernel='linear'` | Uses a linear decision boundary.               |
+| `fit()`           | Trains the SVM classifier using training data. |
+| `predict()`       | Predicts the class labels of testing emails.   |
+
+## 6. Performance Evaluation
+
+The performance of both algorithms is evaluated using accuracy.
+
+### 6.1 Accuracy Score
+
+Accuracy measures the percentage of correctly classified emails.
+
+Formula:
+
+\\[ Accuracy=\frac{Correct\ Predictions}{Total\ Predictions}\times100 \\]
+
+Or:
+
+\\[ Accuracy=\frac{TP+TN}{TP+TN+FP+FN}\times100 \\]
+
+Where:
+
+- TP (True Positive): Spam emails correctly classified as Spam.
+- TN (True Negative): Normal emails correctly classified as Normal.
+- FP (False Positive): Normal emails incorrectly classified as Spam.
+- FN (False Negative): Spam emails incorrectly classified as Normal.
+
+### 6.2 Comparing KNN and SVM
+
+The program displays:
+
+```
+print('KNN Accuracy:', accuracy_score(y_test, knn_pred))print('SVM Accuracy:', accuracy_score(y_test, svm_pred))
+```
+
+The two accuracy values are compared to understand which classifier performs better on the testing dataset.
+
+A higher accuracy indicates more correct predictions, but precision, recall and F1-score are also important for spam classification.
+
+## 7. Advantages
+
+### KNN Advantages
+
+1. Simple and easy-to-understand classification algorithm.
+2. Does not require a complex training process.
+3. Supports multi-class and binary classification.
+4. Can adapt easily when new training data is added.
+5. Makes no strong assumptions about the data distribution.
+
+### SVM Advantages
+
+1. Effective in high-dimensional feature spaces.
+2. Works well for binary classification problems.
+3. Uses support vectors to create an effective decision boundary.
+4. Supports linear and non-linear classification using kernels.
+5. Can provide good generalization with suitable parameters.
+
+## 8. Disadvantages
+
+### KNN Disadvantages
+
+1. Prediction becomes slow for large training datasets.
+2. Requires more memory to store training samples.
+3. Sensitive to irrelevant features and feature scaling.
+4. Performance depends on the selection of K.
+5. Can be affected by noisy data and imbalanced classes.
+
+### SVM Disadvantages
+
+1. Training can be computationally expensive for large datasets.
+2. Selecting suitable kernel parameters can be difficult.
+3. Less interpretable compared to simple classification algorithms.
+4. Performance depends on proper feature scaling.
+5. Linear SVM may perform poorly when classes require a non-linear boundary.
+
+## 9. Applications
+
+1. Email Filtering: Identifying and blocking unwanted spam emails.
+2. Text Classification: Categorizing documents into predefined categories.
+3. Sentiment Analysis: Classifying reviews as positive or negative.
+4. Fraud Detection: Identifying suspicious financial transactions.
+5. Medical Diagnosis: Classifying medical records into disease categories.
+6. News Classification: Categorizing news articles based on their content.
+
+## 10. Conclusion
+
+Thus, K-Nearest Neighbors (KNN) and Support Vector Machine (SVM) algorithms were successfully implemented for email spam classification. The dataset was preprocessed, divided into training and testing sets, and standardized using StandardScaler. Both models were trained and evaluated using accuracy scores. Their performance can be compared to identify the more suitable classifier for spam detection.
+
+## 11. Time and Space Complexity
+
+Let:
+
+- \\(N\\) = Number of training samples.
+- \\(M\\) = Number of testing samples.
+- \\(D\\) = Number of input features.
+- \\(K\\) = Number of nearest neighbors (5).
+
+### A. KNN Complexity
+
+| Operation  | Time Complexity                                        |
+| ---------- | ------------------------------------------------------ |
+| Training   | \\(O(1)\\) model-building time, excluding data storage |
+| Prediction | \\(O(MND)\\)                                           |
+| Space      | \\(O(ND)\\)                                            |
+
+KNN calculates distances between each test sample and all training samples, making prediction expensive for large datasets.
+
+### B. SVM Complexity
+
+For the given linear SVM:
+
+| Operation  | Complexity                                                    |
+| ---------- | ------------------------------------------------------------- |
+| Training   | Depends on the solver and data; no single tight bound applies |
+| Prediction | Approximately \\(O(MSD)\\)                                    |
+| Space      | Approximately \\(O(SD)\\) for support vectors                 |
+
+Here, \\(S\\) is the number of support vectors. Linear SVM training can be efficient, but its actual cost depends on the optimization solver and dataset.
+
+### Practical Exam Answer
+
+- KNN: Training \\(O(1)\\) excluding storage; prediction \\(O(MND)\\); space \\(O(ND)\\).
+- Linear SVM: Training complexity is solver-dependent; prediction approximately \\(O(MSD)\\); support-vector storage approximately \\(O(SD)\\).
+
+## 12. Important Viva Questions and Answers
+
+1\. What is spam classification?
+
+It is the process of identifying unwanted emails and separating them from legitimate emails.
+
+2\. Which type of machine learning is used?
+
+Supervised learning, because the dataset contains labelled email samples.
+
+3\. What is KNN?
+
+KNN is a supervised algorithm that classifies data based on the majority class of its nearest neighbors.
+
+4\. What is the value of K in this practical?
+
+K is 5, meaning five nearest neighbors are considered.
+
+5\. What is SVM?
+
+SVM is a supervised algorithm that finds an optimal hyperplane to separate different classes.
+
+6\. What is a hyperplane?
+
+A hyperplane is a decision boundary that separates data points belonging to different classes.
+
+7\. What are support vectors?
+
+Support vectors are the data points closest to the decision boundary.
+
+8\. Why is StandardScaler used?
+
+It standardizes features so that large-valued features do not dominate distance calculations or SVM optimization.
+
+9\. What is a kernel in SVM?
+
+A kernel helps SVM handle different types of decision boundaries, including non-linear boundaries.
+
+10\. Which kernel is used in this practical?
+
+A linear kernel is used.
+
+11\. What is the difference between KNN and SVM?
+
+KNN classifies based on neighboring data points, whereas SVM classifies using an optimized decision boundary.
+
+12\. Why is Email No. removed?
+
+It is an identifier and does not provide meaningful information for predicting whether an email is spam.
+
+13\. What is the purpose of `stratify=y`?
+
+It maintains the proportion of each class in training and testing datasets.
+
+14\. Which algorithm is lazy learning?
+
+KNN is a lazy learning algorithm because it stores training data and performs calculations during prediction.
+
+15\. Which algorithm is better for spam classification?
+
+The better algorithm depends on testing performance, computational requirements and precision/recall. It cannot be decided without comparing the actual results.
+
+## 13. Quick Revision Table
+
+| Concept        | Answer                      |
+| -------------- | --------------------------- |
+| Practical      | Email Spam Classification   |
+| Algorithms     | KNN and SVM                 |
+| Learning Type  | Supervised Learning         |
+| Problem Type   | Binary Classification       |
+| Dataset        | emails.csv                  |
+| Target         | Last column                 |
+| Removed Column | Email No.                   |
+| K Value        | 5                           |
+| SVM Kernel     | Linear                      |
+| Data Split     | 80% Training, 20% Testing   |
+| Scaling        | StandardScaler              |
+| Evaluation     | Accuracy Score              |
+| KNN Prediction | Based on nearest neighbors  |
+| SVM Prediction | Based on optimal hyperplane |
+
+Important exam point: KNN and SVM both require feature scaling for this practical. KNN is distance-based, while SVM uses a decision boundary. Accuracy compares their overall correctness, but recall is particularly important when the goal is to avoid missing spam emails.

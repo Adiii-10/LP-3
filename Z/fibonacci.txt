@@ -1,0 +1,403 @@
+#include <iostream>
+using namespace std;
+
+long long fibIter(int n) {
+    if (n <= 1) return n;
+
+    long long a = 0, b = 1, c;
+
+    for (int i = 2; i <= n; i++) {
+        c = a + b;
+        a = b;
+        b = c;
+    }
+
+    return b;
+}
+
+long long fibRec(int n) {
+    if (n <= 1) return n;
+
+    return fibRec(n - 1) + fibRec(n - 2);
+}
+
+int main() {
+    int n;
+
+    cout << "Enter n: ";
+    cin >> n;
+
+    if (n < 0) {
+        cout << "Please enter a non-negative number.";
+        return 0;
+    }
+
+    cout << "\nFibonacci series (iterative): ";
+
+    for (int i = 0; i < n; i++)
+        cout << fibIter(i) << " ";
+
+    cout << "\nFibonacci series (recursive): ";
+
+    for (int i = 0; i < n; i++)
+        cout << fibRec(i) << " ";
+
+    return 0;
+}
+
+
+
+*****
+•DAA-1: Write a non-recursive and a recursive program to calculate Fibonacci numbers and analyze their time and space complexity
+g++ name.cpp -o output
+./output
+
+
+#include <iostream>
+using namespace std;
+
+// ==========================================
+// 1. Iterative Approach: O(n) time, O(1) space
+// ==========================================
+long long fibIter(int n) {
+    // Base cases: F(0) = 0, F(1) = 1
+    if (n <= 1) return n;
+
+    // Track the two preceding numbers:
+    // 'a' stores F(i - 2), initialized to F(0) = 0
+    // 'b' stores F(i - 1), initialized to F(1) = 1
+    // 'c' holds the newly computed Fibonacci number F(i)
+    long long a = 0, b = 1, c;
+
+    // Iteratively build the series from index 2 up to n
+    for (int i = 2; i <= n; i++) {
+        c = a + b; // F(i) = F(i - 1) + F(i - 2)
+        a = b;     // Slide window forward: shift F(i - 1) into 'a'
+        b = c;     // Shift newly computed F(i) into 'b'
+    }
+
+    // 'b' holds the n-th Fibonacci number upon loop completion
+    return b;
+}
+
+// ==========================================
+// 2. Recursive Approach: O(2^n) time, O(n) call-stack space
+// ==========================================
+long long fibRec(int n) {
+    // Base cases: Stop recursion when n reaches 0 or 1
+    if (n <= 1) return n;
+
+    // Recurrence relation: compute preceding terms via recursive branches
+    // Note: Recalculates overlapping subproblems repeatedly
+    return fibRec(n - 1) + fibRec(n - 2);
+}
+
+// ==========================================
+// 3. Driver Code
+// ==========================================
+int main() {
+    int n;
+
+    // Prompt user for number of terms to print
+    cout << "Enter n: ";
+    cin >> n;
+
+    // Input validation: Fibonacci sequence indices cannot be negative
+    if (n < 0) {
+        cout << "Please enter a non-negative number.";
+        return 0; // Terminate execution early on invalid input
+    }
+
+    // Print the first n Fibonacci terms using the iterative method
+    cout << "\nFibonacci series (iterative): ";
+    for (int i = 0; i < n; i++)
+        cout << fibIter(i) << " ";
+
+    // Print the first n Fibonacci terms using the recursive method
+    // Warning: Becomes very slow when n exceeds ~40 due to exponential time complexity
+    cout << "\nFibonacci series (recursive): ";
+    for (int i = 0; i < n; i++)
+        cout << fibRec(i) << " ";
+
+    return 0;
+}
+
+
+
+*****
+
+
+
+// 1. Iterative Approach: O(n) time, O(1) space
+// 2. Recursive Approach: O(2^n) time, O(n) call-stack space
+
+
+
+*****
+
+
+
+# Practical: Implementation of Fibonacci Series using Iterative and Recursive Methods
+
+## 1. Aim
+
+To write a C++ program to generate the Fibonacci series using iterative and recursive approaches and compare their performance in terms of time and space complexity.
+
+## 2. Theory
+
+### What is the Fibonacci Series?
+
+The Fibonacci series is a sequence of numbers in which each number is obtained by adding the previous two numbers.
+
+- The first Fibonacci number is 0.
+- The second Fibonacci number is 1.
+- Every subsequent number is the sum of the previous two numbers.
+
+Mathematical recurrence relation:
+
+\\[ F(n)=F(n-1)+F(n-2) \\]
+
+Where:
+
+- \\(F(0)=0\\) — First base condition.
+- \\(F(1)=1\\) — Second base condition.
+- \\(F(n)\\) — Fibonacci number at position n.
+
+Example:
+
+If n = 7, the Fibonacci series is:
+
+# 0, 1, 1, 2, 3, 5, 8
+
+First 7 Fibonacci numbers
+
+## 3. Approaches Used
+
+There are two approaches implemented in this program:
+
+### A. Iterative Approach
+
+The iterative approach generates Fibonacci numbers using loops instead of function calls.
+
+Working:
+
+1. Initialize three variables: `a = 0`, `b = 1` and `c`.
+2. Check whether n is 0 or 1 and return n directly.
+3. Use a for loop starting from 2 up to n.
+4. Calculate the next Fibonacci number using `c = a + b`.
+5. Update a with b and b with c.
+6. Return b as the required Fibonacci number.
+
+Example:
+
+For n = 5:
+
+| Iteration | a | b | c = a + b |
+| --------- | - | - | --------- |
+| Initial   | 0 | 1 | —         |
+| 2         | 1 | 1 | 1         |
+| 3         | 1 | 2 | 2         |
+| 4         | 2 | 3 | 3         |
+| 5         | 3 | 5 | 5         |
+
+Therefore, the fifth index Fibonacci number is 5.
+
+### B. Recursive Approach
+
+The recursive approach generates Fibonacci numbers by calling the same function repeatedly with smaller input values.
+
+Working:
+
+1. Define a function `fibRec(int n)`.
+2. Check the base condition: if n is less than or equal to 1, return n.
+3. Otherwise, call the same function with n-1 and n-2.
+4. Add both returned values.
+5. Continue until the base condition is reached.
+6. Return the calculated Fibonacci number.
+
+Recursive formula:
+
+\\[ F(n)=F(n-1)+F(n-2) \\]
+
+Example:
+
+For n = 4:
+
+\\[ F(4)=F(3)+F(2) \\]
+
+\\[ =(F(2)+F(1))+(F(1)+F(0)) \\]
+
+\\[ =(1+1)+(1+0)=3 \\]
+
+Therefore, F(4) = 3.
+
+## 4. Difference Between Iterative and Recursive Approaches
+
+| Iterative                      | Recursive                               |
+| ------------------------------ | --------------------------------------- |
+| Uses loops.                    | Uses function calls.                    |
+| Does not use recursion.        | Uses recursion.                         |
+| Requires less memory.          | Requires more memory due to call stack. |
+| Faster for large inputs.       | Slower for large inputs.                |
+| Avoids function call overhead. | Has function call overhead.             |
+| Time complexity is O(n).       | Time complexity is O(2ⁿ).               |
+
+## 5. Time and Space Complexity Analysis
+
+Complexity analysis determines the amount of time and memory required by an algorithm as the input size increases.
+
+### Iterative Approach
+
+- Time Complexity: O(n) – The loop executes n-1 times for calculating one Fibonacci number.
+- Space Complexity: O(1) – Only three variables are used, regardless of input size.
+
+### Recursive Approach
+
+- Time Complexity: O(2ⁿ) – Repeated function calls calculate the same Fibonacci values multiple times.
+- Space Complexity: O(n) – Recursive calls are stored in the function call stack, with maximum recursion depth proportional to n.
+
+### Complexity Comparison
+
+| Parameter    | Iterative | Recursive   |
+| ------------ | --------- | ----------- |
+| Best time    | O(1)      | O(1)        |
+| Average time | O(n)      | Exponential |
+| Worst time   | O(n)      | O(2ⁿ)       |
+| Space        | O(1)      | O(n)        |
+
+Note: The above complexities describe calculating a single Fibonacci number. Your program prints n numbers, so the total complexity differs:
+
+- Iterative series generation: O(n²), because `fibIter()` is called separately for each index.
+- Recursive series generation: O(2ⁿ), as the exponential costs are dominated by the last Fibonacci calculation.
+
+## 6. Applications of Fibonacci Series
+
+1. Computer Algorithms: Used in Fibonacci search and Fibonacci heap data structures.
+2. Dynamic Programming: Helps demonstrate memoization and optimization of recursive problems.
+3. Financial Analysis: Fibonacci retracement levels are used in technical market analysis.
+4. Computer Graphics: Used in generating spiral patterns and certain geometric designs.
+5. Nature and Biology: Fibonacci patterns appear in sunflower seeds, pinecones and flower arrangements.
+6. Algorithm Analysis: Used to understand recursion, recurrence relations and algorithm complexity.
+
+## 7. Advantages
+
+### Iterative Approach
+
+1. Requires less memory because it uses a fixed number of variables.
+2. Executes faster because it avoids repeated function calls.
+3. Efficient for generating large Fibonacci sequences.
+4. Does not cause stack overflow due to deep recursion.
+5. Easy to optimize for better performance.
+
+### Recursive Approach
+
+1. Code is short, simple and easy to understand.
+2. Directly follows the mathematical definition of Fibonacci series.
+3. Demonstrates the concept of recursion effectively.
+4. Useful for understanding function calls and base conditions.
+5. Can be optimized using memoization or dynamic programming.
+
+## 8. Disadvantages
+
+### Iterative Approach
+
+1. Requires explicit loop implementation and variable updates.
+2. May be less intuitive for understanding recursive mathematical relationships.
+3. The logic becomes comparatively lengthy for certain recursive problems.
+4. Requires manual management of previous Fibonacci values.
+
+### Recursive Approach
+
+1. Recalculates the same Fibonacci values multiple times.
+2. Requires additional memory for maintaining the function call stack.
+3. Becomes very slow for large input values.
+4. May cause stack overflow due to excessive recursive calls.
+5. Has higher function call overhead compared to iteration.
+
+## 9. Applications of Iteration and Recursion
+
+| Iteration               | Recursion               |
+| ----------------------- | ----------------------- |
+| Array traversal         | Tree traversal          |
+| Searching and sorting   | Tower of Hanoi          |
+| Loop-based calculations | Factorial calculation   |
+| Repeated computations   | Divide and conquer      |
+| Fibonacci generation    | Backtracking algorithms |
+
+## 10. Conclusion
+
+Thus, the Fibonacci series was successfully implemented using both iterative and recursive approaches in C++. The iterative approach is more time and space efficient, while the recursive approach provides a simple implementation based on mathematical recurrence. Their performance was analyzed using time and space complexity.
+
+## Important Viva Questions and Answers
+
+1\. What is the Fibonacci series?
+
+It is a sequence in which each number is the sum of the previous two numbers, starting with 0 and 1.
+
+2\. What is recursion?
+
+Recursion is a programming technique in which a function calls itself to solve smaller instances of a problem.
+
+3\. What is iteration?
+
+Iteration is a programming technique that repeatedly executes a block of statements using loops.
+
+4\. What is a base condition?
+
+A base condition is the stopping condition that prevents infinite recursive function calls.
+
+5\. Why is recursion slower than iteration in this program?
+
+Because recursion repeatedly calculates the same Fibonacci values and creates additional function calls.
+
+6\. What is the time complexity of iterative Fibonacci?
+
+O(n) for calculating one Fibonacci number.
+
+7\. What is the time complexity of recursive Fibonacci?
+
+O(2ⁿ) for the simple recursive implementation.
+
+8\. Can recursion be optimized?
+
+Yes, recursion can be optimized using memoization or dynamic programming.
+
+9\. What happens if the base condition is removed?
+
+The recursive function will continue calling itself until a stack overflow occurs.
+
+10\. Which approach is better and why?
+
+The iterative approach is better for this implementation because it requires O(n) time and O(1) auxiliary space.
+
+11\. What is the purpose of `long long`?
+
+It stores larger integer values than the normal `int` data type.
+
+12\. Why do we use `return n` when n is less than or equal to 1?
+
+Because the first two Fibonacci numbers are 0 and 1, which are the base cases.
+
+13\. What is a call stack?
+
+A call stack is a memory structure that stores information about active function calls, including their local variables and return addresses.
+
+14\. What is the difference between recursion and iteration?
+
+Recursion uses repeated function calls, whereas iteration uses loops to repeat instructions.
+
+15\. What is the limitation of this program?
+
+The recursive approach becomes inefficient for large inputs, and `long long` also has a limited numeric range.
+
+Practical exam tip
+
+Remember these four points especially:
+
+- Iterative Fibonacci: O(n) time, O(1) space per number.
+- Recursive Fibonacci: O(2ⁿ) time, O(n) space per number.
+- Iteration uses loops; recursion uses function calls.
+- Iterative approach is more efficient for this program.
+
+One important code observation: Your program prints the first `n` Fibonacci numbers, not the Fibonacci number at index `n`. For example, entering 7 prints `0 1 1 2 3 5 8`.
+

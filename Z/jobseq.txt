@@ -1,0 +1,473 @@
+#include <iostream>
+#include <vector>
+#include <algorithm>
+using namespace std;
+
+struct Job {
+    char id;
+    int deadline;
+    int profit;
+};
+
+bool cmp(Job a, Job b) {
+    return a.profit > b.profit;
+}
+
+int main() {
+    int n;
+
+    cout << "Enter number of jobs: ";
+    cin >> n;
+
+    vector<Job> jobs(n);
+
+    cout << "Enter job id, deadline, profit for each job:\n";
+
+    for (int i = 0; i < n; i++)
+        cin >> jobs[i].id >> jobs[i].deadline >> jobs[i].profit;
+
+    sort(jobs.begin(), jobs.end(), cmp);
+
+    int maxDeadline = 0;
+
+    for (auto &j : jobs)
+        maxDeadline = max(maxDeadline, j.deadline);
+
+    vector<char> slot(maxDeadline + 1, '-');
+    vector<bool> filled(maxDeadline + 1, false);
+
+    int totalProfit = 0, count = 0;
+
+    for (int i = 0; i < n; i++) {
+        for (int t = jobs[i].deadline; t >= 1; t--) {
+            if (!filled[t]) {
+                filled[t] = true;
+                slot[t] = jobs[i].id;
+                totalProfit += jobs[i].profit;
+                count++;
+                break;
+            }
+        }
+    }
+
+    cout << "\nJob sequence: ";
+
+    for (int t = 1; t <= maxDeadline; t++)
+        if (filled[t])
+            cout << slot[t] << " ";
+
+    cout << "\nJobs scheduled: " << count;
+    cout << "\nTotal profit: " << totalProfit << endl;
+
+    return 0;
+}
+
+
+
+*****
+•DAA-2: Implement job sequencing with deadlines using a greedy method.
+g++ name.cpp -o output
+./output
+
+
+#include <iostream>
+#include <vector>
+#include <algorithm>
+using namespace std;
+
+// Structure to encapsulate the properties of a single job
+struct Job {
+    char id;       // Unique identifier for the job (e.g., 'a', 'b', 'J1')
+    int deadline;  // Latest unit time slot by which the job must be completed
+    int profit;    // Profit earned if the job is completed on or before deadline
+};
+
+// Comparator function used to sort jobs in strictly non-increasing (descending) order of profit
+bool cmp(Job a, Job b) {
+    return a.profit > b.profit; // Places higher-profit jobs first
+}
+
+int main() {
+    int n;
+
+    // 1. Read the total count of available jobs
+    cout << "Enter number of jobs: ";
+    cin >> n;
+
+    vector<Job> jobs(n);
+
+    // 2. Read each job's specifications
+    cout << "Enter job id, deadline, profit for each job:\n";
+    for (int i = 0; i < n; i++)
+        cin >> jobs[i].id >> jobs[i].deadline >> jobs[i].profit;
+
+    // 3. GREEDY STEP: Sort jobs descending by profit
+    // Maximizing overall profit means considering the most lucrative jobs first
+    sort(jobs.begin(), jobs.end(), cmp);
+
+    // 4. Determine the size of the schedule timeline
+    // The maximum possible time slot we can schedule into is the highest deadline among all jobs
+    int maxDeadline = 0;
+    for (auto &j : jobs)
+        maxDeadline = max(maxDeadline, j.deadline);
+
+    // 5. Initialize time slots (1-indexed, using indices 1 to maxDeadline)
+    // slot: stores which job is placed in which time slot
+    // filled: boolean flag indicating if a time slot is already taken
+    vector<char> slot(maxDeadline + 1, '-');
+    vector<bool> filled(maxDeadline + 1, false);
+
+    int totalProfit = 0, count = 0;
+
+    // 6. ALLOCATION STEP: Assign slots to sorted jobs greedily
+    for (int i = 0; i < n; i++) {
+        // Find a free slot for jobs[i], scanning backwards from its deadline down to time slot 1.
+        // Reason: Scheduling a job as late as possible preserves earlier slots for jobs with tighter deadlines.
+        for (int t = jobs[i].deadline; t >= 1; t--) {
+            if (!filled[t]) {
+                filled[t] = true;              // Mark slot 't' as occupied
+                slot[t] = jobs[i].id;          // Assign current job to slot 't'
+                totalProfit += jobs[i].profit; // Add profit to running total
+                count++;                       // Increment count of scheduled jobs
+                break;                         // Job scheduled; move to next job
+            }
+        }
+    }
+
+    // 7. Output the generated optimal schedule
+    cout << "\nJob sequence: ";
+    for (int t = 1; t <= maxDeadline; t++)
+        if (filled[t])
+            cout << slot[t] << " ";
+
+    cout << "\nJobs scheduled: " << count;
+    cout << "\nTotal profit: " << totalProfit << endl;
+
+    return 0;
+}
+
+
+
+*****
+
+
+Time Complexity: O(n^2) in the worst case 
+O(n log n) to sort, + O(n x maxDeadline) for the nested slot search, 
+
+Space Complexity: $O(n + maxDeadline) for vectors jobs, slot, and filled.
+
+
+
+*****
+
+
+
+# Practical: Job Sequencing with Deadlines Using Greedy Method
+
+## 1. Aim
+
+To write a C++ program to solve the Job Sequencing with Deadlines problem using the Greedy Algorithm and maximize the total profit by scheduling jobs within their deadlines.
+
+## 2. Theory
+
+### What is Job Sequencing with Deadlines?
+
+Job Sequencing with Deadlines is a scheduling problem in which a set of jobs is given, and each job has:
+
+1. Job ID: A unique identifier used to identify each job.
+2. Deadline: The maximum time by which a job must be completed.
+3. Profit: The amount of profit earned after completing a job.
+
+The objective is to schedule jobs in such a way that the maximum total profit is obtained without missing any deadlines.
+
+In this problem, each job requires exactly one unit of time, and only one job can be performed at a time.
+
+### 3. Greedy Algorithm
+
+A Greedy Algorithm is an algorithmic technique that makes the best possible choice at each step to achieve an optimal solution.
+
+In Job Sequencing, the greedy strategy is:
+
+- Sort all jobs in decreasing order of their profits.
+- Select the job with the highest profit first.
+- Schedule the selected job in the latest available time slot before its deadline.
+- If no available slot exists, reject that job.
+- Repeat until all jobs are considered.
+
+Why do we schedule jobs in the latest available slot?
+
+Scheduling a job as late as possible before its deadline keeps earlier time slots available for other jobs having smaller deadlines.
+
+## 4. Example
+
+Consider the following jobs:
+
+| Job ID | Deadline | Profit |
+| ------ | -------- | ------ |
+| A      | 2        | 100    |
+| B      | 1        | 19     |
+| C      | 2        | 27     |
+| D      | 1        | 25     |
+| E      | 3        | 15     |
+
+Step 1: Sort jobs according to decreasing profit.
+
+| Job ID | Deadline | Profit |
+| ------ | -------- | ------ |
+| A      | 2        | 100    |
+| C      | 2        | 27     |
+| D      | 1        | 25     |
+| B      | 1        | 19     |
+| E      | 3        | 15     |
+
+Step 2: Find the maximum deadline.
+
+Maximum deadline = 3
+
+Therefore, three time slots are available.
+
+Step 3: Schedule jobs greedily.
+
+- Job A: Deadline = 2. Schedule in slot 2.
+- Job C: Deadline = 2. Slot 2 is occupied, so schedule in slot 1.
+- Job D: Deadline = 1. Slot 1 is occupied, so reject it.
+- Job B: Deadline = 1. Slot 1 is occupied, so reject it.
+- Job E: Deadline = 3. Schedule in slot 3.
+
+Final job schedule:
+
+# C
+
+Slot 1
+
+# A
+
+Slot 2
+
+# E
+
+Slot 3
+
+Total Profit = 27 + 100 + 15 = 142
+
+3 jobs scheduled
+
+## 5. Algorithm
+
+1. Start the program.
+2. Read the number of jobs and their IDs, deadlines and profits.
+3. Sort all jobs in descending order of profit.
+4. Find the maximum deadline among all jobs.
+5. Create time slots and mark all slots as empty.
+6. Select each job in decreasing order of profit.
+7. Check the available time slots from its deadline towards slot 1.
+8. If an empty slot is found, assign the job to that slot and add its profit.
+9. If no empty slot is available, reject the job.
+10. Display the scheduled jobs, number of jobs and total profit.
+11. Stop the program.
+
+## 6. Explanation of Important Code Statements
+
+| Code statement                        | Purpose                                 |
+| ------------------------------------- | --------------------------------------- |
+| `struct Job`                          | Stores job ID, deadline and profit.     |
+| `sort(jobs.begin(), jobs.end(), cmp)` | Sorts jobs by decreasing profit.        |
+| `cmp()`                               | Compares profits of two jobs.           |
+| `maxDeadline`                         | Stores the maximum deadline.            |
+| `vector<char> slot`                   | Stores scheduled job IDs.               |
+| `vector<bool> filled`                 | Tracks occupied time slots.             |
+| `totalProfit`                         | Stores the total profit earned.         |
+| `count`                               | Counts the scheduled jobs.              |
+| `break`                               | Stops searching after scheduling a job. |
+
+### Working of Important Functions
+
+1\. Sort Function
+
+```
+bool cmp(Job a, Job b) {
+    return a.profit > b.profit;
+}
+```
+
+This function sorts jobs in descending order of profit so that the most profitable job is considered first.
+
+2\. Finding Maximum Deadline
+
+```
+for (auto &j : jobs)
+    maxDeadline = max(maxDeadline, j.deadline);
+```
+
+This loop finds the largest deadline to determine the number of available time slots.
+
+3\. Checking Available Slots
+
+```
+for (int t = jobs[i].deadline; t >= 1; t--) {
+    if (!filled[t]) {
+        filled[t] = true;
+        slot[t] = jobs[i].id;
+        totalProfit += jobs[i].profit;
+        count++;
+        break;
+    }
+}
+```
+
+This loop searches for an empty time slot starting from the job's deadline and moving backwards. If a slot is available, the job is scheduled and its profit is added.
+
+## 7. Time and Space Complexity
+
+### Time Complexity
+
+Let:
+
+- n = Number of jobs.
+- D = Maximum deadline.
+
+| Operation                | Complexity |
+| ------------------------ | ---------- |
+| Sorting jobs             | O(n log n) |
+| Finding maximum deadline | O(n)       |
+| Initializing slots       | O(D)       |
+| Scheduling jobs          | O(n × D)   |
+
+Overall Time Complexity:
+
+\\[ O(n\log n+nD) \\]
+
+The scheduling process checks at most D slots for each of n jobs.
+
+Worst-case Time Complexity:
+
+\\[ O(n^2) \\]
+
+When D is proportional to n, the overall complexity becomes O(n²).
+
+### Space Complexity
+
+- Jobs vector requires O(n) space.
+- Slot vector requires O(D) space.
+- Filled vector requires O(D) space.
+
+Overall Space Complexity:
+
+\\[ O(n+D) \\]
+
+## 8. Applications of Job Sequencing
+
+1. Project Management: Scheduling tasks according to deadlines and expected profits.
+2. CPU Scheduling: Allocating processing time to tasks based on their priorities.
+3. Manufacturing: Scheduling production jobs to maximize earnings.
+4. Cloud Computing: Allocating computing tasks within given execution deadlines.
+5. Business Management: Selecting profitable orders while meeting customer deadlines.
+6. Resource Allocation: Assigning limited resources to high-priority activities.
+
+## 9. Advantages
+
+1. Uses a simple and easy-to-understand greedy strategy.
+2. Maximizes total profit under the given scheduling constraints.
+3. Prioritizes jobs having higher profits.
+4. Reduces unnecessary scheduling decisions.
+5. Provides an efficient solution for many practical scheduling problems.
+6. Helps utilize available time slots effectively.
+
+## 10. Disadvantages
+
+1. Assumes every job requires exactly one unit of time.
+2. Assumes only one job can be performed at a time.
+3. Jobs that miss their deadlines are rejected completely.
+4. Basic implementation may become inefficient for large numbers of jobs.
+5. Does not directly handle jobs with different execution times.
+6. Requires known deadlines and profits before scheduling.
+
+## 11. Conclusion
+
+Thus, the Job Sequencing with Deadlines problem was successfully implemented using the Greedy Algorithm in C++. Jobs were sorted according to decreasing profit and scheduled in the latest available time slot before their deadlines. The algorithm helps maximize total profit while satisfying the given scheduling constraints.
+
+## 12. Important Viva Questions and Answers
+
+1\. What is a Greedy Algorithm?
+
+A Greedy Algorithm makes the locally optimal choice at each step to obtain an overall solution.
+
+2\. What is Job Sequencing with Deadlines?
+
+It is a scheduling problem in which jobs are assigned time slots before their deadlines to maximize total profit.
+
+3\. What is the objective of this problem?
+
+To maximize the total profit by scheduling the maximum possible profitable jobs within their deadlines.
+
+4\. Why do we sort jobs in descending order of profit?
+
+To consider the most profitable jobs first and maximize the total profit.
+
+5\. Why do we schedule jobs in the latest available slot?
+
+To keep earlier slots available for jobs having smaller deadlines.
+
+6\. What happens if no time slot is available?
+
+The job is rejected because it cannot be completed before its deadline.
+
+7\. What is the time complexity of this algorithm?
+
+O(n log n + nD), where n is the number of jobs and D is the maximum deadline. In the worst case, it is O(n²) when D is proportional to n.
+
+8\. What is the space complexity?
+
+O(n + D), for storing jobs and time slots.
+
+9\. What is the purpose of the comparator function?
+
+It sorts jobs in decreasing order of their profits.
+
+10\. What is the purpose of the `filled` vector?
+
+It keeps track of whether a particular time slot is occupied or available.
+
+11\. What is the purpose of `break`?
+
+It stops the inner loop once a job has been successfully scheduled.
+
+12\. Can two jobs be scheduled in the same time slot?
+
+No, because only one job can be performed in a time slot.
+
+13\. Is Job Sequencing a Greedy Algorithm?
+
+Yes, because it selects the highest-profit available job at each step.
+
+14\. What is the maximum number of jobs that can be scheduled?
+
+At most D jobs, where D is the maximum deadline, assuming all jobs require one unit of time.
+
+15\. What is the difference between deadline and profit?
+
+Deadline represents the maximum allowed completion time, whereas profit represents the earnings obtained after completing a job.
+
+16\. Can this algorithm handle jobs requiring different execution times?
+
+No, this basic algorithm assumes that every job requires exactly one unit of time.
+
+17\. Why is a vector used instead of an array?
+
+A vector is a dynamic container that can adjust its size according to the input.
+
+18\. What is the role of `max()`?
+
+It returns the larger of two values and helps determine the maximum deadline.
+
+Most important for practical viva
+
+Remember these five points:
+
+1. Technique: Greedy Algorithm.
+2. Selection: Job with maximum profit first.
+3. Scheduling: Latest available slot before the deadline.
+4. Time Complexity: O(n log n + nD).
+5. Space Complexity: O(n + D).
+
+One important exam point: The greedy algorithm used here is optimal for the standard Job Sequencing with Deadlines problem, where every job takes one unit of time and earns its profit only if completed by its deadline.

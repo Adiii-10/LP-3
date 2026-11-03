@@ -1,0 +1,655 @@
+import pandas as pd
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.metrics import confusion_matrix, accuracy_score, precision_score, recall_score
+
+df = pd.read_csv('diabetes.csv')
+X = df.drop('Outcome', axis=1)
+y = df['Outcome']
+
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y, test_size=0.2, random_state=42, stratify=y
+)
+scaler = StandardScaler()
+X_train = scaler.fit_transform(X_train)
+X_test = scaler.transform(X_test)
+
+model = KNeighborsClassifier(n_neighbors=5)
+model.fit(X_train, y_train)
+pred = model.predict(X_test)
+accuracy = accuracy_score(y_test, pred)
+
+print('Confusion Matrix:\n', confusion_matrix(y_test, pred))
+print('Accuracy:', accuracy)
+print('Error Rate:', 1 - accuracy)
+print('Precision:', precision_score(y_test, pred, zero_division=0))
+print('Recall:', recall_score(y_test, pred, zero_division=0))
+
+
+
+*****
+
+
+
+•ML-3: Implement the K-Nearest Neighbors algorithm on the diabetes.csv dataset. Compute the confusion matrix, accuracy, error rate, precision and recall. 
+Dataset link: https://www.kaggle.com/datasets/abdallamahgoub/diabetes
+
+
+
+*****
+
+
+
+# ==============================================================================
+# SECTION 1: IMPORTING REQUIRED LIBRARIES
+# ==============================================================================
+
+# pandas: Used for reading the dataset (CSV) and managing tabular data frames.
+import pandas as pd
+
+# train_test_split: Splits data into distinct train and test subsets to assess generalizability.
+from sklearn.model_selection import train_test_split
+
+# StandardScaler: Performs z-score feature scaling: z = (x - mean) / std.
+# Distance-based algorithms like KNN are highly sensitive to unscaled magnitudes.
+from sklearn.preprocessing import StandardScaler
+
+# KNeighborsClassifier: The K-Nearest Neighbors classifier implementation in scikit-learn.
+from sklearn.neighbors import KNeighborsClassifier
+
+# Evaluation metrics:
+# - confusion_matrix: Tabulates True Positives, True Negatives, False Positives, False Negatives.
+# - accuracy_score: Proportion of total predictions that are correct.
+# - precision_score: Proportion of predicted positives that are actual positives (TP / (TP + FP)).
+# - recall_score: Proportion of actual positives identified correctly (TP / (TP + FN)).
+from sklearn.metrics import confusion_matrix, accuracy_score, precision_score, recall_score
+
+
+# ==============================================================================
+# SECTION 2: DATA LOADING & FEATURE EXTRACTION
+# ==============================================================================
+
+# Load the Pima Indians Diabetes dataset into a pandas DataFrame.
+df = pd.read_csv('diabetes.csv')
+
+# Feature matrix (X): Drop the target column 'Outcome' along axis=1 (columns).
+# Predictors include: Pregnancies, Glucose, BloodPressure, SkinThickness, Insulin, BMI, etc.
+X = df.drop('Outcome', axis=1)
+
+# Target vector (y): The binary class label (1 = Diabetic, 0 = Non-diabetic).
+y = df['Outcome']
+
+
+# ==============================================================================
+# SECTION 3: TRAIN-TEST SPLITTING
+# ==============================================================================
+
+# Partition data into 80% training and 20% testing subsets.
+# - test_size=0.2: Reserves 20% of rows for final evaluation on unseen data.
+# - random_state=42: Fixes the pseudo-random generator seed for reproducible splits across runs.
+# - stratify=y: Preserves the original 0/1 class ratio in both splits to handle class imbalance.
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y, test_size=0.2, random_state=42, stratify=y
+)
+
+
+# ==============================================================================
+# SECTION 4: FEATURE SCALING (STANDARDIZATION)
+# ==============================================================================
+
+scaler = StandardScaler()
+
+# fit_transform() on X_train:
+# 1. Calculates the mean (mu) and standard deviation (sigma) for each feature in the training set.
+# 2. Replaces each value x with (x - mu) / sigma.
+X_train = scaler.fit_transform(X_train)
+
+# transform() on X_test:
+# Standardizes the test set using the parameters (mu and sigma) derived strictly from X_train.
+# Never fit on the test data to avoid data leakage.
+X_test = scaler.transform(X_test)
+
+
+# ==============================================================================
+# SECTION 5: MODEL INITIALIZATION & TRAINING (KNN)
+# ==============================================================================
+
+# Initialize KNN with k=5 neighbors using default Euclidean distance.
+# An odd value of k avoids tie-breakers in binary classification.
+model = KNeighborsClassifier(n_neighbors=5)
+
+# Fit step: KNN is a non-parametric, lazy learner.
+# It simply indexes and stores the training data points in memory rather than learning weights.
+model.fit(X_train, y_train)
+
+
+# ==============================================================================
+# SECTION 6: INFERENCE (PREDICTION)
+# ==============================================================================
+
+# For every sample in X_test:
+# 1. Computes distances to all training points.
+# 2. Selects the 5 closest neighbors.
+# 3. Assigns the majority class vote among those 5 neighbors.
+pred = model.predict(X_test)
+
+
+# ==============================================================================
+# SECTION 7: EVALUATION & PERFORMANCE METRICS
+# ==============================================================================
+
+# Compute base classification accuracy: (TP + TN) / (TP + TN + FP + FN)
+accuracy = accuracy_score(y_test, pred)
+
+# Confusion matrix format:
+# [[ True Negatives (TN),  False Positives (FP) ],
+#  [ False Negatives (FN), True Positives (TP) ]]
+print('Confusion Matrix:\n', confusion_matrix(y_test, pred))
+
+# Overall accuracy percentage
+print('Accuracy:', accuracy)
+
+# Error Rate: Misclassification rate = 1 - Accuracy = (FP + FN) / Total
+print('Error Rate:', 1 - accuracy)
+
+# Precision: Out of all patients predicted as diabetic, how many actually are?
+# zero_division=0 prevents runtime warning/crash if (TP + FP) equals 0
+print('Precision:', precision_score(y_test, pred, zero_division=0))
+
+# Recall (Sensitivity): Out of all actual diabetic patients, how many were detected?
+# Critical in healthcare to minimize False Negatives (missed diagnoses).
+print('Recall:', recall_score(y_test, pred, zero_division=0))
+
+
+
+*****
+
+
+
+9. Time and Space Complexity
+Let:
+- \(N\) = Number of training samples.
+- \(M\) = Number of testing samples.
+- \(D\) = Number of input features.
+- \(K\) = Number of nearest neighbors (5).
+A. Time Complexity
+Operation	Time Complexity
+Data preprocessing	\(O(ND)\), approximately
+Train-test split	\(O(ND)\)
+StandardScaler	\(O(ND)\)
+KNN training	\(O(1)\), excluding data storage
+KNN prediction	\(O(MND)\)
+Accuracy and error rate	\(O(M)\)
+Confusion matrix, precision and recall	\(O(M)\)
+
+B. Space Complexity
+Operation	Space Complexity
+Dataset storage	\(O(ND)\)
+KNN training data storage	\(O(ND)\)
+Prediction distances	Up to \(O(N)\) per test sample in a straightforward implementation
+Evaluation metrics	\(O(1)\) for fixed binary classes
+
+Practical Exam Answer
+- Time Complexity: \(O(MND)\) for KNN prediction.
+- Space Complexity: \(O(ND)\) for storing training data.
+Where N is the number of training samples, M is the number of testing samples and D is the number of features.
+
+
+
+*****
+
+
+
+
+# Practical: Diabetes Prediction Using K-Nearest Neighbors (KNN) Classification Algorithm
+
+## 1. Aim
+
+To implement the K-Nearest Neighbors (KNN) classification algorithm to predict whether a person is diabetic or non-diabetic using the diabetes dataset and evaluate its performance using confusion matrix, accuracy, error rate, precision and recall.
+
+## 2. Theory
+
+### 2.1 What is Diabetes Prediction?
+
+Diabetes prediction is the process of identifying whether a person is likely to have diabetes based on medical measurements and health-related attributes.
+
+It is a binary classification problem in which individuals are classified into two categories:
+
+- Outcome = 0: Person is non-diabetic.
+- Outcome = 1: Person is diabetic.
+
+Machine learning algorithms analyze medical data and identify patterns that help predict the possibility of diabetes.
+
+### 2.2 What is Machine Learning?
+
+Machine Learning is a branch of Artificial Intelligence that enables computers to learn patterns from data and make predictions without being explicitly programmed for every task.
+
+Machine learning algorithms learn from historical data and use the learned patterns to predict outcomes for new data.
+
+Types of Machine Learning:
+
+1. Supervised Learning
+2. Unsupervised Learning
+3. Reinforcement Learning
+
+This practical uses Supervised Learning – Classification, because the dataset contains medical records with known outcome labels.
+
+### 2.3 What is K-Nearest Neighbors (KNN)?
+
+K-Nearest Neighbors (KNN) is a supervised machine learning algorithm used for classification and regression problems.
+
+It classifies a new data point based on the majority class of its K nearest neighboring data points.
+
+KNN works on the principle that similar data points are generally located close to each other in the feature space.
+
+Working of KNN:
+
+1. Select the value of K, representing the number of nearest neighbors.
+2. Calculate the distance between the new data point and existing training samples.
+3. Identify the K nearest neighbors with the smallest distances.
+4. Count the class labels of the selected neighbors.
+5. Assign the majority class to the new data point.
+
+[K-Nearest Neighbors (KNN): A Simple Yet Powerful Machine Learning Algorithm | by SamriddhiRuhela | Medium](https://images.openai.com/static-rsc-4/-UxuLGqx3F4IE4CFtz2MBhNlq5tNtY98hggMQbLO19QRdY5RfG5ZJ55iRNjG9VPDm1L1vVsQ8h4BdbhUw0HJITBhjbjxl4KdrH_AzCLyTy_sVlbze_M1nYkPoaIiQwiIDfr7GZCjPPeST4Ubd1kgYHzfuWYp-unUPbJKlIq-WUQ?purpose=inline)
+
+[medium.com](https://medium.com/%40ruhelasamridhi/k-nearest-neighbors-knn-a-simple-yet-powerful-machine-learning-algorithm-c3a3bd83057a?utm_source=chatgpt.com)
+
+### 2.4 Distance Calculation in KNN
+
+KNN commonly uses Euclidean distance to measure the distance between two data points.
+
+Formula:
+
+\\[ d(p,q)=\sqrt{\sum\_{i=1}^{n}(p_i-q_i)^2} \\]
+
+Where:
+
+- \\(p\\) and \\(q\\) represent two data points.
+- \\(n\\) represents the number of features.
+- \\(p_i\\) and \\(q_i\\) represent individual feature values.
+
+The data points having the smallest distances are considered the nearest neighbors.
+
+In this practical: `n_neighbors=5` means that the algorithm considers five nearest neighbors to predict whether a person is diabetic or non-diabetic.
+
+Example:
+
+Suppose the five nearest neighbors have the following labels:
+
+- 3 diabetic patients (1)
+- 2 non-diabetic patients (0)
+
+The new patient is classified as diabetic because the majority of neighbors belong to class 1.
+
+### 2.5 Dataset Description
+
+The practical uses the `diabetes.csv` dataset, commonly known as the Pima Indians Diabetes dataset.
+
+It contains medical information about individuals used to predict whether they have diabetes.
+
+Important features include:
+
+| Feature                  | Description                                       |
+| ------------------------ | ------------------------------------------------- |
+| Pregnancies              | Number of times the person has been pregnant.     |
+| Glucose                  | Plasma glucose concentration.                     |
+| BloodPressure            | Diastolic blood pressure.                         |
+| SkinThickness            | Thickness of the skinfold.                        |
+| Insulin                  | Two-hour serum insulin level.                     |
+| BMI                      | Body Mass Index.                                  |
+| DiabetesPedigreeFunction | Function representing family history of diabetes. |
+| Age                      | Age of the individual.                            |
+| Outcome                  | Target variable indicating diabetes status.       |
+
+Target variable: `Outcome` represents whether the person is diabetic or non-diabetic.
+
+- 0 = Non-diabetic
+- 1 = Diabetic
+
+### 2.6 What is Classification?
+
+Classification is a supervised machine learning technique used to predict the category or class of a given data point.
+
+In this practical, KNN classifies individuals into two categories based on their medical attributes.
+
+Examples:
+
+- Diabetes prediction.
+- Spam email detection.
+- Disease classification.
+- Fraud detection.
+
+## 3. Important Concepts Used in the Program
+
+### 3.1 Data Preprocessing
+
+Data preprocessing is the process of converting raw data into a suitable format for machine learning algorithms.
+
+In this practical, preprocessing involves:
+
+1. Loading the diabetes dataset.
+2. Separating input features and target variable.
+3. Dividing the dataset into training and testing sets.
+4. Standardizing numerical features.
+5. Preparing the data for KNN classification.
+
+### 3.2 Feature Selection
+
+Feature selection involves identifying the input variables required for training a machine learning model.
+
+In this practical:
+
+- `X` contains all medical input features.
+- `y` contains the target variable `Outcome`.
+
+The target column is removed from the input features because it is the value that the model needs to predict.
+
+### 3.3 Train-Test Split
+
+The dataset is divided into two parts:
+
+- Training Data: Used to train the KNN model.
+- Testing Data: Used to evaluate the model using unseen data.
+
+In this practical:
+
+| Parameter      | Value |
+| -------------- | ----- |
+| Training Data  | 80%   |
+| Testing Data   | 20%   |
+| Random State   | 42    |
+| Stratification | Yes   |
+
+Explanation:
+
+- `test_size=0.2` reserves 20% of the dataset for testing.
+- `random_state=42` ensures reproducibility.
+- `stratify=y` maintains the proportion of diabetic and non-diabetic samples in both datasets.
+
+### 3.4 Feature Scaling using StandardScaler
+
+Feature scaling is the process of bringing all numerical features to a similar scale.
+
+It is important for KNN because the algorithm calculates distances between data points.
+
+Formula:
+
+\\[ Z=\frac{X-\mu}{\sigma} \\]
+
+Where:
+
+- \\(X\\) = Original feature value.
+- \\(\mu\\) = Mean of the feature.
+- \\(\sigma\\) = Standard deviation.
+- \\(Z\\) = Standardized value.
+
+Why is StandardScaler used?
+
+1. Prevents large-valued features from dominating distance calculations.
+2. Gives all features a comparable scale.
+3. Improves KNN classification performance.
+4. Helps calculate distances more meaningfully.
+
+The scaler is fitted only on training data and then applied to testing data to prevent data leakage.
+
+### 3.5 KNN Classifier Implementation
+
+The program uses:
+
+```
+model = KNeighborsClassifier(n_neighbors=5)model.fit(X_train, y_train)pred = model.predict(X_test)
+```
+
+Explanation:
+
+| Statement                | Description                                  |
+| ------------------------ | -------------------------------------------- |
+| `KNeighborsClassifier()` | Creates a KNN classification model.          |
+| `n_neighbors=5`          | Considers five nearest neighbors.            |
+| `fit()`                  | Stores the training data for classification. |
+| `predict()`              | Predicts the class labels of testing data.   |
+
+KNN is called a lazy learning algorithm because it does not build an explicit mathematical model during training. It stores the training data and performs distance calculations during prediction.
+
+## 4. Performance Evaluation Metrics
+
+The performance of the KNN classifier is evaluated using a confusion matrix, accuracy, error rate, precision and recall.
+
+### 4.1 Confusion Matrix
+
+A confusion matrix is a table used to evaluate the performance of a classification algorithm by comparing actual and predicted values.
+
+For binary classification:
+
+|                         | Predicted Non-Diabetic (0) | Predicted Diabetic (1) |
+| ----------------------- | -------------------------- | ---------------------- |
+| Actual Non-Diabetic (0) | True Negative (TN)         | False Positive (FP)    |
+| Actual Diabetic (1)     | False Negative (FN)        | True Positive (TP)     |
+
+Explanation:
+
+- True Positive (TP): Diabetic individuals correctly predicted as diabetic.
+- True Negative (TN): Non-diabetic individuals correctly predicted as non-diabetic.
+- False Positive (FP): Non-diabetic individuals incorrectly predicted as diabetic.
+- False Negative (FN): Diabetic individuals incorrectly predicted as non-diabetic.
+
+### 4.2 Accuracy
+
+Accuracy measures the percentage of correctly classified predictions out of all predictions.
+
+Formula:
+
+\\[ Accuracy=\frac{TP+TN}{TP+TN+FP+FN} \\]
+
+Higher accuracy indicates that the model correctly classifies a larger proportion of test samples.
+
+### 4.3 Error Rate
+
+Error rate measures the proportion of incorrectly classified predictions.
+
+Formula:
+
+\\[ Error\ Rate=1-Accuracy \\]
+
+Alternatively:
+
+\\[ Error\ Rate=\frac{FP+FN}{TP+TN+FP+FN} \\]
+
+Lower error rate indicates fewer incorrect predictions.
+
+### 4.4 Precision
+
+Precision measures how many individuals predicted as diabetic are actually diabetic.
+
+Formula:
+
+\\[ Precision=\frac{TP}{TP+FP} \\]
+
+Importance:
+
+- Measures the correctness of positive predictions.
+- Helps identify false positive predictions.
+- Higher precision means fewer non-diabetic individuals are incorrectly classified as diabetic.
+
+### 4.5 Recall
+
+Recall measures how many actual diabetic individuals are correctly identified by the model.
+
+Formula:
+
+\\[ Recall=\frac{TP}{TP+FN} \\]
+
+Importance:
+
+- Measures the model's ability to identify diabetic individuals.
+- Helps identify false negative predictions.
+- Higher recall means fewer diabetic individuals are missed.
+
+Important: In medical prediction, recall is particularly important because failing to identify a diabetic individual can have serious consequences. However, this model is only an educational example and cannot replace clinical diagnosis.
+
+## 5. Advantages
+
+1. Simple and easy-to-understand classification algorithm.
+2. Does not require a complex training process.
+3. Supports binary and multi-class classification problems.
+4. Can classify new samples using neighboring data points.
+5. Makes no strong assumptions about the distribution of data.
+6. Can be used for various medical prediction applications.
+
+## 6. Disadvantages
+
+1. Prediction becomes slow for large datasets.
+2. Requires more memory to store training samples.
+3. Sensitive to irrelevant features and feature scaling.
+4. Performance depends on selecting a suitable value of K.
+5. Can be affected by noisy data and outliers.
+6. May perform poorly when classes are imbalanced.
+
+## 7. Applications
+
+1. Medical Diagnosis: Predicting the possibility of diabetes and other diseases.
+2. Healthcare: Classifying patients based on medical measurements.
+3. Disease Detection: Identifying patterns associated with different medical conditions.
+4. Patient Monitoring: Supporting the analysis of patient health records.
+5. Risk Assessment: Identifying individuals who may require further medical evaluation.
+6. Medical Research: Analyzing health-related datasets to discover patterns.
+
+## 8. Conclusion
+
+Thus, the K-Nearest Neighbors (KNN) classification algorithm was successfully implemented to predict diabetes using the diabetes dataset. The data was divided into training and testing sets, and numerical features were standardized using StandardScaler. The model was trained using five nearest neighbors and evaluated using a confusion matrix, accuracy, error rate, precision and recall.
+
+## 9. Time and Space Complexity
+
+Let:
+
+- \\(N\\) = Number of training samples.
+- \\(M\\) = Number of testing samples.
+- \\(D\\) = Number of input features.
+- \\(K\\) = Number of nearest neighbors (5).
+
+### A. Time Complexity
+
+| Operation                              | Time Complexity                    |
+| -------------------------------------- | ---------------------------------- |
+| Data preprocessing                     | \\(O(ND)\\), approximately         |
+| Train-test split                       | \\(O(ND)\\)                        |
+| StandardScaler                         | \\(O(ND)\\)                        |
+| KNN training                           | \\(O(1)\\), excluding data storage |
+| KNN prediction                         | \\(O(MND)\\)                       |
+| Accuracy and error rate                | \\(O(M)\\)                         |
+| Confusion matrix, precision and recall | \\(O(M)\\)                         |
+
+### B. Space Complexity
+
+| Operation                 | Space Complexity                                                     |
+| ------------------------- | -------------------------------------------------------------------- |
+| Dataset storage           | \\(O(ND)\\)                                                          |
+| KNN training data storage | \\(O(ND)\\)                                                          |
+| Prediction distances      | Up to \\(O(N)\\) per test sample in a straightforward implementation |
+| Evaluation metrics        | \\(O(1)\\) for fixed binary classes                                  |
+
+### Practical Exam Answer
+
+- Time Complexity: \\(O(MND)\\) for KNN prediction.
+- Space Complexity: \\(O(ND)\\) for storing training data.
+
+Where N is the number of training samples, M is the number of testing samples and D is the number of features.
+
+## 10. Important Viva Questions and Answers
+
+1\. What is diabetes prediction?
+
+It is the process of predicting whether an individual is diabetic based on medical attributes.
+
+2\. Which algorithm is used in this practical?
+
+K-Nearest Neighbors (KNN) classification algorithm.
+
+3\. What type of machine learning is used?
+
+Supervised learning because the dataset contains labelled outcomes.
+
+4\. What is KNN?
+
+KNN is a supervised algorithm that classifies a data point based on the majority class of its nearest neighbors.
+
+5\. What is the value of K in this practical?
+
+K is 5, meaning five nearest neighbors are considered.
+
+6\. What is Euclidean distance?
+
+It is a distance measurement used to calculate the straight-line distance between two data points.
+
+7\. Why is StandardScaler used?
+
+It standardizes numerical features so that large-valued features do not dominate distance calculations.
+
+8\. What is the target variable?
+
+`Outcome` is the target variable representing diabetes status.
+
+9\. What does Outcome = 0 indicate?
+
+It indicates that the individual is classified as non-diabetic in the dataset.
+
+10\. What does Outcome = 1 indicate?
+
+It indicates that the individual is classified as diabetic in the dataset.
+
+11\. What is a confusion matrix?
+
+It is a table that compares actual and predicted classes to evaluate classification performance.
+
+12\. What is precision?
+
+Precision measures the proportion of correctly predicted positive cases among all predicted positive cases.
+
+13\. What is recall?
+
+Recall measures the proportion of actual positive cases correctly identified by the model.
+
+14\. What is error rate?
+
+Error rate measures the proportion of incorrect predictions made by the model.
+
+15\. Why is recall important in diabetes prediction?
+
+Higher recall helps identify more actual diabetic individuals and reduces missed positive cases.
+
+16\. What is lazy learning?
+
+Lazy learning stores training data and performs calculations when a new prediction is requested.
+
+17\. Why is `stratify=y` used?
+
+It maintains the proportion of each target class in training and testing datasets.
+
+18\. What is the purpose of `zero_division=0`?
+
+It returns zero instead of raising a warning when precision or recall has a zero denominator.
+
+## 11. Quick Revision Table
+
+| Concept               | Answer                                                    |
+| --------------------- | --------------------------------------------------------- |
+| Practical             | Diabetes Prediction                                       |
+| Algorithm             | K-Nearest Neighbors                                       |
+| Learning Type         | Supervised Learning                                       |
+| Problem Type          | Binary Classification                                     |
+| Dataset               | diabetes.csv                                              |
+| Target Variable       | Outcome                                                   |
+| Class 0               | Non-Diabetic                                              |
+| Class 1               | Diabetic                                                  |
+| K Value               | 5                                                         |
+| Training Data         | 80%                                                       |
+| Testing Data          | 20%                                                       |
+| Scaling               | StandardScaler                                            |
+| Distance Metric       | Euclidean (default)                                       |
+| Evaluation            | Confusion Matrix, Accuracy, Error Rate, Precision, Recall |
+| Training Complexity   | \\(O(1)\\), excluding storage                             |
+| Prediction Complexity | \\(O(MND)\\)                                              |
+| Space Complexity      | \\(O(ND)\\)                                               |
+
+Important practical point: Accuracy tells us the overall correctness of predictions, while precision and recall help us understand the types of classification errors. For diabetes prediction, recall is especially important because the model should avoid missing individuals who may actually have diabetes.

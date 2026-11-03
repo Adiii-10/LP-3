@@ -1,0 +1,779 @@
+#include <iostream>
+#include <vector>
+#include <algorithm>
+using namespace std;
+
+int main() {
+    int n, W;
+
+    cout << "Enter number of items: ";
+    cin >> n;
+
+    vector<int> wt(n + 1), val(n + 1);
+
+    cout << "Enter weight and value of each item:\n";
+    for (int i = 1; i <= n; i++)
+        cin >> wt[i] >> val[i];
+
+    cout << "Enter knapsack capacity: ";
+    cin >> W;
+
+    vector<vector<int>> dp(n + 1, vector<int>(W + 1, 0));
+
+    for (int i = 1; i <= n; i++) {
+        for (int w = 0; w <= W; w++) {
+            if (wt[i] <= w)
+                dp[i][w] = max(dp[i - 1][w],
+                               val[i] + dp[i - 1][w - wt[i]]);
+            else
+                dp[i][w] = dp[i - 1][w];
+        }
+    }
+
+    cout << "\nMaximum value = " << dp[n][W] << endl;
+
+    cout << "Items selected (item numbers): ";
+
+    int w = W;
+
+    for (int i = n; i >= 1; i--) {
+        if (dp[i][w] != dp[i - 1][w]) {
+            cout << i << " ";
+            w -= wt[i];
+        }
+    }
+
+    cout << endl;
+
+    return 0;
+}
+
+
+
+
+*****
+•DAA-5: Write a program to solve a 0-1 Knapsack problem using dynamic programming or branch and bound strategy
+g++ name.cpp -o output
+./output
+
+
+#include <iostream>
+#include <vector>
+#include <algorithm>
+using namespace std;
+
+int main() {
+    int n, W;
+
+    // 1. Read the total number of items
+    cout << "Enter number of items: ";
+    cin >> n;
+
+    // Use 1-based indexing for convenient mapping with DP rows
+    // wt[i]: weight of the i-th item
+    // val[i]: value/profit of the i-th item
+    vector<int> wt(n + 1), val(n + 1);
+
+    // 2. Read weight and profit/value for each item
+    cout << "Enter weight and value of each item:\n";
+    for (int i = 1; i <= n; i++)
+        cin >> wt[i] >> val[i];
+
+    // 3. Read maximum weight capacity of the knapsack
+    cout << "Enter knapsack capacity: ";
+    cin >> W;
+
+    // 4. Initialize 2D DP Table: dp[i][w]
+    // Dimensions: (n + 1) rows x (W + 1) columns, initialized to 0
+    // State definition: dp[i][w] stores the maximum value attainable 
+    // using a subset of the first 'i' items with a total capacity limit of 'w'.
+    // Base cases: dp[0][w] = 0 (0 items) and dp[i][0] = 0 (0 capacity) are handled by zero-initialization.
+    vector<vector<int>> dp(n + 1, vector<int>(W + 1, 0));
+
+    // 5. Build DP Table bottom-up (Tabulation)
+    for (int i = 1; i <= n; i++) {
+        for (int w = 0; w <= W; w++) {
+            // Case 1: The current item's weight fits inside capacity 'w'
+            if (wt[i] <= w) {
+                // Choice A: Exclude item i -> profit remains dp[i - 1][w]
+                // Choice B: Include item i -> profit is val[i] + optimal profit of remaining capacity dp[i - 1][w - wt[i]]
+                dp[i][w] = max(dp[i - 1][w],
+                               val[i] + dp[i - 1][w - wt[i]]);
+            }
+            // Case 2: The current item is heavier than capacity 'w' -> Cannot include it
+            else {
+                dp[i][w] = dp[i - 1][w];
+            }
+        }
+    }
+
+    // 6. Optimal result is at dp[n][W] (considering all n items with full capacity W)
+    cout << "\nMaximum value = " << dp[n][W] << endl;
+
+    // 7. Backtracking Step: Reconstruct which items were included in the optimal set
+    cout << "Items selected (item numbers): ";
+
+    int w = W; // Start with the total capacity
+
+    // Trace backwards from item n down to item 1
+    for (int i = n; i >= 1; i--) {
+        // If dp[i][w] differs from dp[i - 1][w], item i was included
+        if (dp[i][w] != dp[i - 1][w]) {
+            cout << i << " "; // Print 1-based item index
+            w -= wt[i];       // Reduce remaining capacity by the item's weight
+        }
+        // Else, dp[i][w] == dp[i - 1][w] means item i was skipped
+    }
+
+    cout << endl;
+
+    return 0;
+}
+
+
+
+
+*****
+
+
+
+
+Time Complexity: O(n X W), where n is the number of items and W is the maximum knapsack capacity. This is a pseudo-polynomial time complexity.
+Space Complexity: O(n X W) auxiliary space for the 2D table 
+
+
+
+
+*****
+
+
+
+
+# Practical: 0/1 Knapsack Problem Using Dynamic Programming
+
+## 1. Aim
+
+To write a C++ program to solve the 0/1 Knapsack Problem using Dynamic Programming and maximize the total value of selected items without exceeding the given knapsack capacity.
+
+## 2. Theory
+
+### What is the 0/1 Knapsack Problem?
+
+The 0/1 Knapsack Problem is an optimization problem in which a set of items is given, and each item has:
+
+1. Weight: The amount of capacity occupied by an item.
+2. Value: The profit or benefit obtained by selecting an item.
+3. Knapsack Capacity: The maximum weight that the knapsack can hold.
+
+The objective is to select items such that the total value is maximized without exceeding the given capacity.
+
+It is called 0/1 Knapsack because each item has only two possibilities:
+
+- 1: Select the complete item.
+- 0: Do not select the item.
+
+Important: Items cannot be divided into fractions.
+
+### 3. Dynamic Programming
+
+Dynamic Programming is an algorithmic technique that solves a complex problem by breaking it into smaller overlapping subproblems and storing their results to avoid repeated calculations.
+
+The 0/1 Knapsack Problem is commonly solved using Dynamic Programming because each item can either be selected or rejected.
+
+Main idea:
+
+For every item, we have two choices:
+
+1. Include the item if its weight does not exceed the remaining capacity.
+2. Exclude the item and retain the previous maximum value.
+
+The maximum value is selected from these two choices.
+
+### 4. Mathematical Formula
+
+Let:
+
+- n = Number of items.
+- W = Maximum knapsack capacity.
+- \\(wt[i]\\) = Weight of the ith item.
+- \\(val[i]\\) = Value of the ith item.
+- \\(dp[i][w]\\) = Maximum value obtained using the first i items with capacity w.
+
+Recurrence Relation:
+
+If the weight of the current item is less than or equal to the available capacity:
+
+\\[ dp[i][w]=\max \begin{cases} dp[i-1][w]\\\ val[i]+dp[i-1][w-wt[i]] \end{cases} \\]
+
+Otherwise:
+
+\\[ dp[i][w]=dp[i-1][w] \\]
+
+Base Conditions:
+
+\\[ dp[0][w]=0 \\]
+
+\\[ dp[i][0]=0 \\]
+
+This means:
+
+- If there are no items, maximum value is zero.
+- If capacity is zero, maximum value is zero.
+
+## 5. Working of the Algorithm
+
+The algorithm follows these steps:
+
+1. Start the program.
+2. Read the number of items.
+3. Read the weight and value of each item.
+4. Read the knapsack capacity.
+5. Create a two-dimensional DP table initialized with zeros.
+6. Traverse each item and every possible capacity.
+7. Check whether the current item can fit into the available capacity.
+8. If it fits, calculate both inclusion and exclusion values.
+9. Store the maximum of these two values in the DP table.
+10. If it does not fit, copy the previous value.
+11. After filling the table, display the maximum value.
+12. Backtrack through the DP table to identify selected items.
+13. Stop the program.
+
+## 6. Example
+
+\- Knapsack capacity = 50 kg.
+
+| Item | Weight | Profit | Ratio |
+| ---- | ------ | ------ | ----- |
+| A    | 10 kg  | ₹60    | 6     |
+| B    | 20 kg  | ₹100   | 5     |
+| C    | 30 kg  | ₹120   | 4     |
+
+
+Let's solve the 0/1 Knapsack Problem using the same example.
+
+The main difference is that in 0/1 Knapsack, we cannot take a fraction of an item. We must either take the complete item (1) or leave it (0).
+
+## Given data
+
+Knapsack capacity = 50 kg
+
+| Item | Weight | Profit | Ratio |
+| ---- | ------ | ------ | ----- |
+| A    | 10 kg  | ₹60    | 6     |
+| B    | 20 kg  | ₹100   | 5     |
+| C    | 30 kg  | ₹120   | 4     |
+
+## Step 1: Understand the selection
+
+We need to select items such that:
+
+- Total weight does not exceed 50 kg.
+- Total profit is maximum.
+- Each item is either completely selected or rejected.
+
+## Step 2: Check all possible combinations
+
+| Combination | Total Weight | Total Profit | Valid? |
+| ----------- | ------------ | ------------ | ------ |
+| A           | 10 kg        | ₹60          | Yes    |
+| B           | 20 kg        | ₹100         | Yes    |
+| C           | 30 kg        | ₹120         | Yes    |
+| A + B       | 30 kg        | ₹160         | Yes    |
+| A + C       | 40 kg        | ₹180         | Yes    |
+| B + C       | 50 kg        | ₹220         | Yes    |
+| A + B + C   | 60 kg        | ₹280         | No     |
+
+## Step 3: Select the best combination
+
+- A + B + C requires 60 kg, which exceeds the capacity.
+- A + B gives ₹160 profit.
+- A + C gives ₹180 profit.
+- B + C gives ₹220 profit.
+
+Therefore, the best combination is B + C.
+
+## Step 4: Calculate total weight and profit
+
+\\[ Total\ Weight = 20 + 30 = 50\ kg \\]
+
+\\[ Total\ Profit = 100 + 120 = ₹220 \\]
+
+Final result
+
+# ₹220
+
+Maximum profit obtained
+
+Knapsack capacity used
+
+50 / 50 kg
+
+Selected items: B + C
+
+## Visual representation
+
+Knapsack filled with 50 kg
+
+# B
+
+20 kg
+
+# C
+
+30 kg
+
+Item A is not selected.
+
+## Important difference between Fractional and 0/1 Knapsack
+
+| Fractional Knapsack        | 0/1 Knapsack                                         |
+| -------------------------- | ---------------------------------------------------- |
+| Items can be divided.      | Items cannot be divided.                             |
+| Greedy method is optimal.  | Dynamic Programming guarantees the optimal solution. |
+| Selects A, B and 2/3 of C. | Selects B and C.                                     |
+| Maximum profit = ₹240.     | Maximum profit = ₹220.                               |
+
+Conclusion: Using the 0/1 Knapsack approach, the optimal solution is to select Items B and C, giving a maximum profit of ₹220 within the 50 kg capacity.
+
+
+Consider the following input:
+
+| Item | Weight | Value |
+| ---- | ------ | ----- |
+| 1    | 2      | 12    |
+| 2    | 1      | 10    |
+| 3    | 3      | 20    |
+| 4    | 2      | 15    |
+
+Knapsack Capacity = 5
+
+### Step 1: Initialize DP Table
+
+Create a table with:
+
+- Rows = Number of items + 1 = 5.
+- Columns = Capacity + 1 = 6.
+
+Initially, all values are zero.
+
+### Step 2: Calculate DP Values
+
+For every item, calculate the maximum value possible for each capacity.
+
+The final DP table is:
+
+| Items / Capacity | 0 | 1  | 2  | 3  | 4  | 5  |
+| ---------------- | - | -- | -- | -- | -- | -- |
+| 0 items          | 0 | 0  | 0  | 0  | 0  | 0  |
+| Item 1           | 0 | 0  | 12 | 12 | 12 | 12 |
+| Item 2           | 0 | 10 | 12 | 22 | 22 | 22 |
+| Item 3           | 0 | 10 | 12 | 22 | 30 | 32 |
+| Item 4           | 0 | 10 | 15 | 25 | 30 | 37 |
+
+### Step 3: Find Maximum Value
+
+The maximum value is stored in the last cell:
+
+\\[ dp[n][W]=dp[4][5] \\]
+
+\\[ \boxed{Maximum\ Value=37} \\]
+
+### Step 4: Find Selected Items
+
+The program uses backtracking to identify which items contributed to the maximum value.
+
+Selected items:
+
+- Item 4: Weight = 2, Value = 15.
+- Item 2: Weight = 1, Value = 10.
+- Item 1: Weight = 2, Value = 12.
+
+Total weight:
+
+\\[ 2+1+2=5 \\]
+
+Total value:
+
+\\[ 15+10+12=\boxed{37} \\]
+
+Final Result
+
+# 37
+
+Maximum value
+
+Selected items: 1, 2, 4
+
+Total weight: 5
+
+Knapsack capacity: 5
+
+## 7. Explanation of Important Code Statements
+
+### A. Taking Input
+
+```
+int n, W;
+
+cin >> n;
+
+vector<int> wt(n + 1), val(n + 1);
+```
+
+- `n` stores the number of items.
+- `W` stores the knapsack capacity.
+- `wt` stores the weights of items.
+- `val` stores the values of items.
+
+Vectors are created with size n+1 because indexing starts from 1 in this program.
+
+### B. Creating DP Table
+
+```
+vector<vector<int>> dp(n + 1,
+    vector<int>(W + 1, 0));
+```
+
+Creates a two-dimensional DP table with n+1 rows and W+1 columns.
+
+Every cell is initially initialized to zero.
+
+### C. Checking Item Weight
+
+```
+if (wt[i] <= w)
+```
+
+Checks whether the current item's weight is less than or equal to the available capacity.
+
+### D. Including or Excluding an Item
+
+```
+dp[i][w] = max(dp[i - 1][w],
+    val[i] + dp[i - 1][w - wt[i]]);
+```
+
+This statement calculates two possibilities:
+
+- `dp[i-1][w]`: Excludes the current item.
+- `val[i] + dp[i-1][w-wt[i]]`: Includes the current item.
+
+The `max()` function selects the option that gives maximum value.
+
+### E. Excluding an Item
+
+```
+else
+    dp[i][w] = dp[i - 1][w];
+```
+
+If the item's weight exceeds the available capacity, the item cannot be selected.
+
+Therefore, the previous maximum value is copied.
+
+### F. Finding Selected Items (Backtracking)
+
+```
+int w = W;
+
+for (int i = n; i >= 1; i--) {
+    if (dp[i][w] != dp[i - 1][w]) {
+        cout << i << " ";
+        w -= wt[i];
+    }
+}
+```
+
+This loop traverses the DP table backwards to identify selected items.
+
+- If the current DP value differs from the previous row, the current item was selected.
+- Its item number is displayed.
+- Its weight is subtracted from the remaining capacity.
+
+Why do we traverse backwards?
+
+Because the DP table is constructed using previous rows, so we can trace the decisions from the final answer back to the first item.
+
+## 8. Time and Space Complexity
+
+Let:
+
+- n = Number of items.
+- W = Knapsack capacity.
+
+### Time Complexity
+
+| Operation             | Complexity |
+| --------------------- | ---------- |
+| Taking input          | O(n)       |
+| Initializing DP table | O(n × W)   |
+| Filling DP table      | O(n × W)   |
+| Backtracking          | O(n)       |
+
+Overall Time Complexity:
+
+\\[ \boxed{O(n\times W)} \\]
+
+Because every item is considered for every possible capacity.
+
+### Space Complexity
+
+The program stores a two-dimensional DP table containing (n+1) × (W+1) elements.
+
+\\[ \boxed{O(n\times W)} \\]
+
+## 9. Applications of 0/1 Knapsack
+
+1. Budget Allocation: Selecting projects to maximize benefits within a limited budget.
+2. Cargo Loading: Selecting complete packages without exceeding transportation capacity.
+3. Investment Planning: Selecting investment opportunities under a fixed budget.
+4. Resource Management: Allocating limited resources to the most valuable activities.
+5. Project Selection: Choosing projects to maximize returns within limited resources.
+6. Memory Management: Selecting complete data objects within a fixed memory capacity.
+
+## 10. Advantages
+
+1. Guarantees an optimal solution for the standard 0/1 Knapsack problem.
+2. Avoids repeated calculations using stored subproblem results.
+3. Considers both inclusion and exclusion of each item.
+4. Handles overlapping subproblems efficiently.
+5. Provides a systematic method for solving optimization problems.
+6. Can identify the selected items through backtracking.
+
+## 11. Disadvantages
+
+1. Requires additional memory for storing the two-dimensional DP table.
+2. Time complexity depends on both the number of items and capacity.
+3. Becomes inefficient when the knapsack capacity is extremely large.
+4. Cannot select fractional portions of items.
+5. Requires careful construction of recurrence relations.
+6. Uses pseudo-polynomial time rather than polynomial time in the input length.
+
+## 12. Conclusion
+
+Thus, the 0/1 Knapsack Problem was successfully implemented using Dynamic Programming in C++. A two-dimensional DP table was used to calculate the maximum value by considering both inclusion and exclusion of each item. Backtracking was performed to identify the selected items. The algorithm maximizes the total value without exceeding the given knapsack capacity.
+
+# 13. Important Viva Questions and Answers
+
+1\. What is the 0/1 Knapsack Problem?
+
+It is an optimization problem in which items are either completely selected or rejected to maximize total value within a given capacity.
+
+2\. Why is it called 0/1 Knapsack?
+
+Because each item has only two choices: 0 means not selected and 1 means selected completely.
+
+3\. Which algorithm is used?
+
+Dynamic Programming.
+
+4\. What is Dynamic Programming?
+
+It is a technique that solves problems by dividing them into smaller overlapping subproblems and storing their results.
+
+5\. What is the recurrence relation?
+
+\\[ dp[i][w]=\max(dp[i-1][w], val[i]+dp[i-1][w-wt[i]]) \\]
+
+When the current item fits.
+
+6\. What are the base conditions?
+
+When there are no items or capacity is zero, the maximum value is zero.
+
+7\. What is the time complexity?
+
+O(n × W).
+
+8\. What is the space complexity?
+
+O(n × W).
+
+9\. Why do we use a two-dimensional DP table?
+
+To store the maximum value for different numbers of items and different knapsack capacities.
+
+10\. What is backtracking?
+
+Backtracking is the process of tracing previous decisions to identify the items selected for the optimal solution.
+
+11\. Why do we use the `max()` function?
+
+To select the better result between including and excluding the current item.
+
+12\. Can items be divided in 0/1 Knapsack?
+
+No, items must be selected completely or rejected.
+
+13\. What is the difference between Greedy and Dynamic Programming?
+
+Greedy makes locally optimal choices at each step, whereas Dynamic Programming considers subproblems and stores their results to obtain an optimal solution.
+
+14\. Why is Greedy not always optimal for 0/1 Knapsack?
+
+Because selecting the item with the highest profit-to-weight ratio first may prevent a better combination of complete items.
+
+15\. What is an overlapping subproblem?
+
+A subproblem that is solved repeatedly during the execution of an algorithm.
+
+16\. What is optimal substructure?
+
+A problem has optimal substructure when its optimal solution can be constructed using optimal solutions of smaller subproblems.
+
+17\. What is the difference between Memoization and Tabulation?
+
+Memoization is a top-down approach using recursion, whereas Tabulation is a bottom-up approach using iteration.
+
+18\. Why is the time complexity called pseudo-polynomial?
+
+Because O(n × W) depends on the numerical value of capacity W, not merely on the number of bits required to represent W.
+
+19\. Can we optimize the space complexity?
+
+Yes, a one-dimensional DP array can reduce auxiliary space to O(W), provided capacities are processed in descending order.
+
+20\. What happens when the capacity is zero?
+
+No items can be selected, so the maximum value is zero.
+
+Important practical viva points
+
+| Topic            | Answer               |
+| ---------------- | -------------------- |
+| Algorithm        | Dynamic Programming  |
+| Problem type     | Optimization         |
+| Item selection   | 0 or 1               |
+| Fraction allowed | No                   |
+| Data structure   | 2D DP table          |
+| Technique        | Tabulation           |
+| Time complexity  | O(n × W)             |
+| Space complexity | O(n × W)             |
+| Backtracking     | Finds selected items |
+| Objective        | Maximize total value |
+
+## 14. Most Important: Understand These Three Things
+
+1. Why DP? Because every item has two choices: include or exclude, and smaller subproblems can be reused.
+2. Why `max()`? To choose the option that gives the highest value.
+3. Why backward traversal? To identify which items were selected from the completed DP table.
+
+Exam tip: Your code uses the Tabulation (Bottom-Up) approach of Dynamic Programming. If the examiner asks which DP approach you implemented, answer: "I implemented 0/1 Knapsack using bottom-up tabulation with a two-dimensional DP table."
+
+
+
+
+*****
+
+
+
+
+
+
+The main difference between Fractional Knapsack and 0/1 Knapsack is whether we can divide an item into smaller parts or not.
+
+## 1. Difference Between Fractional and 0/1 Knapsack
+
+| Parameter        | Fractional Knapsack                | 0/1 Knapsack                                  |
+| ---------------- | ---------------------------------- | --------------------------------------------- |
+| Item selection   | Items can be divided.              | Items cannot be divided.                      |
+| Selection        | Full or partial item.              | Full item or no item.                         |
+| Algorithm        | Greedy Algorithm.                  | Dynamic Programming (commonly).               |
+| Strategy         | Highest profit/weight ratio first. | Considers combinations of items.              |
+| Optimality       | Greedy gives optimal solution.     | Greedy does not always give optimal solution. |
+| Time complexity  | O(n log n).                        | O(n × C) using DP.                            |
+| Space complexity | O(n).                              | O(n × C) for standard DP table.               |
+| Flexibility      | Allows fractional selection.       | Allows only 0 or 1 selection.                 |
+
+## 2. Example to Understand the Difference
+
+Suppose we have:
+
+\- Knapsack capacity = 50 kg.
+
+| Item | Weight | Profit | Ratio |
+| ---- | ------ | ------ | ----- |
+| A    | 10 kg  | ₹60    | 6     |
+| B    | 20 kg  | ₹100   | 5     |
+| C    | 30 kg  | ₹120   | 4     |
+
+### A. Fractional Knapsack
+
+We can divide items into fractions.
+
+1. Select complete Item A (10 kg) → Profit ₹60.
+2. Select complete Item B (20 kg) → Profit ₹100.
+3. Only 20 kg capacity remains, so take 20/30 fraction of Item C → Profit ₹80.
+
+Fractional Knapsack
+
+# ₹240
+
+Total profit
+
+A = 100%, B = 100%, C = 66.67%
+
+### B. 0/1 Knapsack
+
+We cannot divide any item. We must either select the complete item or reject it.
+
+Possible selections:
+
+| Selected items | Total weight | Total profit |
+| -------------- | ------------ | ------------ |
+| A + B          | 30 kg        | ₹160         |
+| A + C          | 40 kg        | ₹180         |
+| B + C          | 50 kg        | ₹220         |
+| A + B + C      | 60 kg        | Not allowed  |
+
+0/1 Knapsack
+
+# ₹220
+
+Total profit
+
+Select B + C completely.
+
+## 3. Why Are Different Algorithms Used?
+
+Fractional Knapsack – Greedy Algorithm
+
+- Select the item with the highest profit-to-weight ratio.
+- Take the complete item if possible.
+- Otherwise, take the required fraction.
+- This approach always gives an optimal solution for fractional knapsack.
+
+0/1 Knapsack – Dynamic Programming
+
+- Each item has only two choices: select (1) or reject (0).
+- We consider different combinations of items.
+- Dynamic Programming stores previously calculated results to avoid repeated calculations.
+- Greedy selection based only on profit-to-weight ratio may give a suboptimal answer.
+
+## 4. Important Viva Questions
+
+Q1. Why is Fractional Knapsack called Fractional?
+
+Because items can be divided into smaller portions, and partial quantities can be selected.
+
+Q2. Why is 0/1 Knapsack called 0/1?
+
+Because each item has only two possibilities: 0 means not selected and 1 means completely selected.
+
+Q3. Can we use Greedy Algorithm for 0/1 Knapsack?
+
+We can use it as a heuristic, but it does not guarantee the optimal solution.
+
+Q4. Which problem is easier to solve?
+
+Fractional Knapsack is comparatively easier because the Greedy Algorithm provides an optimal solution.
+
+Q5. What is the main difference in one sentence?
+
+Fractional Knapsack allows partial selection of items using Greedy Algorithm, whereas 0/1 Knapsack allows only complete selection or rejection and is commonly solved using Dynamic Programming.
+
+Remember for practical exam
+
+Fractional = Divide items = Greedy
+
+0/1 = Take or leave = Dynamic Programming

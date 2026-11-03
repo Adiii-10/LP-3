@@ -1,0 +1,617 @@
+import pandas as pd
+import matplotlib.pyplot as plt
+from sklearn.preprocessing import StandardScaler
+from sklearn.cluster import KMeans
+
+df = pd.read_csv('sales_data_sample.csv', encoding='latin1')
+X = df.select_dtypes(include='number').drop(
+    columns=['ORDERNUMBER', 'ORDERLINENUMBER', 'QTR_ID',
+             'MONTH_ID', 'YEAR_ID', 'POSTALCODE'], errors='ignore'
+)
+scaler = StandardScaler()
+X = scaler.fit_transform(X)
+
+inertia = []
+for k in range(1, 11):
+    model = KMeans(n_clusters=k, random_state=42, n_init=10)
+    model.fit(X)
+    inertia.append(model.inertia_)
+
+plt.plot(range(1, 11), inertia, marker='o')
+plt.xlabel('Number of clusters')
+plt.ylabel('Inertia')
+plt.title('Elbow Method')
+plt.show()
+
+kmeans = KMeans(n_clusters=3, random_state=42, n_init=10)
+df['Cluster'] = kmeans.fit_predict(X)
+
+
+print(df['Cluster'].value_counts())
+
+
+
+*****
+
+
+
+•ML-4: Implement K-Means or hierarchical clustering on the sales_data_sample.csv dataset. Determine the number of clusters using the elbow method. 
+Dataset link: https://www.kaggle.com/datasets/kyanyoga/sample-sales-data
+
+
+
+
+*****
+
+
+
+
+# ==============================================================================
+# SECTION 1: LIBRARY IMPORTS
+# ==============================================================================
+
+# pandas: Used for tabular data manipulation and reading CSV files into DataFrames.
+import pandas as pd
+
+# matplotlib.pyplot: Used for creating 2D visualizations, such as the Elbow Method curve.
+import matplotlib.pyplot as plt
+
+# StandardScaler: Performs z-score standardization (mean = 0, variance = 1).
+# Crucial for distance-based clustering algorithms like K-Means.
+from sklearn.preprocessing import StandardScaler
+
+# KMeans: Scikit-learn implementation of the K-Means clustering algorithm.
+from sklearn.cluster import KMeans
+
+
+# ==============================================================================
+# SECTION 2: DATA LOADING & PREPROCESSING
+# ==============================================================================
+
+# Load the sales dataset.
+# encoding='latin1' (ISO-8859-1) avoids UnicodeDecodeError often triggered by special characters in retail data.
+df = pd.read_csv('sales_data_sample.csv', encoding='latin1')
+
+# 1. select_dtypes(include='number'): Retains only numerical columns since K-Means relies on mathematical distances.
+# 2. drop(...): Strips identifiers, sequential order counters, temporal categoricals, and zip codes.
+#    These columns either lack continuous numerical meaning or introduce misleading distance biases.
+# errors='ignore' prevents crashes if any listed column name is missing from the file.
+X = df.select_dtypes(include='number').drop(
+    columns=['ORDERNUMBER', 'ORDERLINENUMBER', 'QTR_ID',
+             'MONTH_ID', 'YEAR_ID', 'POSTALCODE'], errors='ignore'
+)
+
+# K-Means calculates Euclidean distance (d = sqrt(sum((x_i - y_i)^2))).
+# Features with large scales (e.g., 'SALES' in thousands) would dominate features with small scales (e.g., 'QUANTITYORDERED' in tens).
+# StandardScaler gives every feature equal geometric weight.
+scaler = StandardScaler()
+X = scaler.fit_transform(X)
+
+
+# ==============================================================================
+# SECTION 3: DETERMINING OPTIMAL 'K' (THE ELBOW METHOD)
+# ==============================================================================
+
+# Inertia: Sum of squared distances of samples to their closest cluster center (WCSS - Within-Cluster Sum of Squares).
+inertia = []
+
+# Evaluate K-Means for cluster counts from k = 1 up to k = 10
+for k in range(1, 11):
+    # n_clusters=k: Number of centroids to generate.
+    # random_state=42: Ensures reproducible centroid initialization.
+    # n_init=10: Runs the algorithm 10 times with distinct initial centroids and keeps the best outcome (lowest inertia).
+    model = KMeans(n_clusters=k, random_state=42, n_init=10)
+    model.fit(X)
+    inertia.append(model.inertia_)
+
+# Plot the Elbow Curve: Number of clusters vs. Inertia
+plt.plot(range(1, 11), inertia, marker='o')
+plt.xlabel('Number of clusters')
+plt.ylabel('Inertia')
+plt.title('Elbow Method')
+plt.show()  # The "elbow" point (where inertia drop levels off) suggests the most natural K
+
+
+# ==============================================================================
+# SECTION 4: FINAL MODEL TRAINING & CLUSTER ASSIGNMENT
+# ==============================================================================
+
+# Fit the chosen model (here configured with k=3 based on elbow observation)
+kmeans = KMeans(n_clusters=3, random_state=42, n_init=10)
+
+# fit_predict(): Computes cluster centers and assigns each row to its nearest centroid index (0, 1, or 2).
+# Append the cluster labels directly back to the original DataFrame for customer/order segmentation analysis.
+df['Cluster'] = kmeans.fit_predict(X)
+
+# Display the count of records grouped under each cluster label
+print('Cluster Counts:')
+print(df['Cluster'].value_counts())
+
+
+
+*****
+
+
+
+Time and Space Complexity
+Let:
+- \(N\) = Number of data points.
+- \(D\) = Number of numerical features.
+- \(K\) = Number of clusters.
+- \(I\) = Number of iterations.
+A. Time Complexity
+Operation	Time Complexity
+Data preprocessing	\(O(ND)\), approximately
+StandardScaler	\(O(ND)\)
+Distance calculation	\(O(NKD)\) per iteration
+Centroid update	\(O(ND)\) per iteration
+K-Means clustering	\(O(I NKD)\)
+Elbow Method (K = 1 to 10)	\(O(10INKD)\), approximately
+Cluster counting	\(O(N)\)
+
+Overall K-Means time complexity:
+\[
+\boxed{O(INKD)}
+\]
+
+For the Elbow Method, K-Means is executed for multiple cluster values, so the total cost is approximately the sum of the costs for each tested K.
+B. Space Complexity
+- Dataset storage: \(O(ND)\)
+- Centroid storage: \(O(KD)\)
+- Cluster labels: \(O(N)\)
+\[
+\boxed{O(ND+KD+N)}
+\]
+
+Practical Exam Answer
+- Time Complexity: \(O(INKD)\)
+- Space Complexity: \(O(ND+KD+N)\)
+Where N is the number of data points, K is the number of clusters, D is the number of features and I is the number of iterations.
+
+
+
+*****
+
+
+
+
+# Practical: Customer Segmentation Using K-Means Clustering Algorithm
+
+## 1. Aim
+
+To implement the K-Means Clustering algorithm on the sales dataset to group customers or sales records into different clusters based on their numerical features and determine the optimal number of clusters using the Elbow Method.
+
+## 2. Theory
+
+### 2.1 What is Customer Segmentation?
+
+Customer segmentation is the process of dividing customers into different groups based on their similarities, purchasing behavior, spending patterns and other characteristics.
+
+It helps businesses understand their customers and develop suitable marketing strategies.
+
+For example:
+
+- High-value customers who purchase expensive products.
+- Regular customers who frequently purchase products.
+- Low-value customers who make fewer purchases.
+
+Customer segmentation helps businesses improve customer satisfaction, marketing effectiveness and sales performance.
+
+### 2.2 What is Machine Learning?
+
+Machine Learning is a branch of Artificial Intelligence that enables computers to learn patterns from data and make decisions or predictions without being explicitly programmed for every task.
+
+Types of Machine Learning:
+
+1. Supervised Learning
+2. Unsupervised Learning
+3. Reinforcement Learning
+
+This practical uses Unsupervised Learning – Clustering, because the dataset does not require predefined class labels.
+
+### 2.3 What is Unsupervised Learning?
+
+Unsupervised Learning is a type of machine learning in which the model identifies hidden patterns, relationships and structures in data without using predefined output labels.
+
+Characteristics:
+
+1. Works with unlabelled datasets.
+2. Identifies hidden patterns in data.
+3. Groups similar data points together.
+4. Does not require predefined target variables.
+5. Commonly used for clustering and association analysis.
+
+Examples include customer segmentation, anomaly detection and market analysis.
+
+### 2.4 What is Clustering?
+
+Clustering is an unsupervised machine learning technique used to divide a dataset into groups called clusters.
+
+Data points within the same cluster have similar characteristics, while data points belonging to different clusters have different characteristics.
+
+Example:
+
+A company can divide its customers into three groups:
+
+- Cluster 0: High-spending customers.
+- Cluster 1: Medium-spending customers.
+- Cluster 2: Low-spending customers.
+
+The actual meaning of each cluster must be determined by examining its feature values.
+
+[Personalize Starbucks Offer Recommendation Engines | by Hong Ling Goh | Medium](https://images.openai.com/static-rsc-4/pzvP5DE_624nIEFeSxj7x4k14wQj74s4igdqRL_T6_KoSF2DLVFR2V2XzeGdohQAyxhyKGpLuJvMtRk3gpJcEWInTguetoXI1wrpOqOyJrpaLAFDvMto0UBLevid2SaswDH3fTAxNg53vDgdBJkrEoq3z7dYZ8QFKK33-XVQiNM?purpose=inline)
+
+[medium.com](https://medium.com/%40hong.ling.goh/personalize-starbucks-offer-recommendation-engines-b82506595f67?utm_source=chatgpt.com)
+
+### 2.5 What is K-Means Clustering?
+
+K-Means is an unsupervised machine learning algorithm used to divide data points into K different clusters based on their similarities.
+
+It groups data points by minimizing the distance between each data point and the centroid of its assigned cluster.
+
+A centroid represents the center of a cluster.
+
+Working of K-Means:
+
+1. Select the number of clusters K.
+2. Initialize K cluster centroids.
+3. Calculate the distance between each data point and all centroids.
+4. Assign each data point to its nearest centroid.
+5. Recalculate the centroids using the mean of the assigned data points.
+6. Repeat the assignment and centroid calculation steps.
+7. Stop when the centroids no longer change significantly or the algorithm reaches its stopping condition.
+
+[k-means Clustering: Math Explained & Multi-Dimension Implementations | by Salah Assana | Medium](https://images.openai.com/static-rsc-4/h4LvIMKC61jb5JpetOPQMtKAbdlbX0S9TUOO8Ts4-Jd2mAGGW_qHDcEMoEL7N8pBcKcwuD681elSKzj-aaFQr_kBgCb3hBD-FeoaFNt5Gau3N_LmMBNQKyQNycvBxEdy2N0j2CaDOCpm35OqdupITIv3CNrUKoYBynzEYW8rkpA?purpose=inline)
+
+[medium.com](https://medium.com/%40SalahAssana/k-means-clustering-math-explained-multi-dimension-implementations-85e202bc2ec0?utm_source=chatgpt.com)
+
+### 2.6 K-Means Objective Function
+
+The main objective of K-Means is to minimize the sum of squared distances between data points and their assigned cluster centroids.
+
+This is known as Within-Cluster Sum of Squares (WCSS), also called inertia in Scikit-learn.
+
+\\[ WCSS=\sum\_{i=1}^{K}\sum\_{x\in C_i} ||x-\mu_i||^2 \\]
+
+Where:
+
+- \\(K\\) = Number of clusters.
+- \\(C_i\\) = Set of data points in cluster i.
+- \\(x\\) = Individual data point.
+- \\(\mu_i\\) = Centroid of cluster i.
+
+Lower inertia indicates that data points are closer to their respective cluster centroids.
+
+## 3. Dataset Description
+
+The practical uses the `sales_data_sample.csv` dataset.
+
+It contains sales-related information about orders, products, customers and transactions.
+
+Important numerical features include:
+
+| Feature         | Description                            |
+| --------------- | -------------------------------------- |
+| QUANTITYORDERED | Number of products ordered.            |
+| PRICEEACH       | Price of each product.                 |
+| SALES           | Total sales amount.                    |
+| MSRP            | Manufacturer's suggested retail price. |
+| ORDERNUMBER     | Unique order identifier.               |
+| ORDERLINENUMBER | Order line identifier.                 |
+| QTR_ID          | Quarter in which the order was placed. |
+| MONTH_ID        | Month of the order.                    |
+| YEAR_ID         | Year of the order.                     |
+| POSTALCODE      | Postal code of the customer.           |
+
+The program selects numerical columns and removes certain identifier and date-related columns before clustering.
+
+Important: The dataset also contains categorical information, such as product line, country and customer details. These are not included in this particular clustering model.
+
+## 4. Important Concepts Used in the Program
+
+### 4.1 Data Loading
+
+The dataset is loaded using Pandas.
+
+```
+df = pd.read_csv('sales_data_sample.csv', encoding='latin1')
+```
+
+Explanation:
+
+- `read_csv()` reads the CSV file into a DataFrame.
+- `encoding='latin1'` helps read the dataset when it contains characters that may not be compatible with the default UTF-8 encoding.
+
+### 4.2 Feature Selection
+
+Feature selection involves selecting relevant input variables for clustering.
+
+```
+X = df.select_dtypes(include='number').drop(    columns=['ORDERNUMBER', 'ORDERLINENUMBER', 'QTR_ID',             'MONTH_ID', 'YEAR_ID', 'POSTALCODE'], errors='ignore')
+```
+
+Explanation:
+
+- `select_dtypes(include='number')` selects only numerical columns.
+- `drop()` removes unnecessary columns.
+- `errors='ignore'` prevents an error if a specified column is absent.
+
+Identifier columns such as order number and postal code are removed because they do not represent meaningful numerical distances for this clustering task.
+
+### 4.3 Feature Scaling using StandardScaler
+
+Feature scaling is the process of bringing numerical features to a similar scale.
+
+It is important in K-Means because the algorithm calculates distances between data points and centroids.
+
+Formula:
+
+\\[ Z=\frac{X-\mu}{\sigma} \\]
+
+Where:
+
+- \\(X\\) = Original feature value.
+- \\(\mu\\) = Mean of the feature.
+- \\(\sigma\\) = Standard deviation.
+- \\(Z\\) = Standardized value.
+
+Advantages of scaling:
+
+1. Prevents large-valued features from dominating distance calculations.
+2. Gives all features comparable importance in distance measurement.
+3. Improves clustering performance.
+4. Helps K-Means identify meaningful groups.
+
+### 4.4 What is Inertia?
+
+Inertia is the sum of squared distances between each data point and its assigned cluster centroid.
+
+It measures how compact the clusters are.
+
+- Lower inertia indicates more compact clusters.
+- Higher inertia indicates greater distances from points to centroids.
+- Inertia generally decreases when the number of clusters increases.
+
+In this practical, inertia is calculated for different values of K using:
+
+```
+model.inertia_
+```
+
+### 4.5 What is the Elbow Method?
+
+The Elbow Method is a technique used to determine the optimal number of clusters in K-Means.
+
+It involves running K-Means with different values of K and calculating the inertia for each value.
+
+The inertia values are plotted against the number of clusters.
+
+The point where the reduction in inertia starts slowing down significantly is called the Elbow Point.
+
+This point is considered a suitable number of clusters.
+
+[Elbow Method and Silhouette Score Explained: Finding the Optimal Number of Clusters in K-Means](https://images.openai.com/static-rsc-4/riYA9HrL4TDBcxdNPeA3loahbwhO4gKadzuSVX8-QFUEG1YhQyX2NC4iILMF0wBPBC2BkUd8PNNSP25STpKWpx2kYizByN-IaRCNl9HCYliDYijesxLUQoYisNVCj_rONpu4c4FsdTJXRVgpEY6aYV_2raGBGEIP5jT7k_60HV4?purpose=inline)
+
+[aryanupadhyay.com](https://www.aryanupadhyay.com/post/elbow-method-and-silhouette-score-explained-finding-the-optimal-number-of-clusters-in-k-means?utm_source=chatgpt.com)
+
+Steps of Elbow Method:
+
+1. Start with K = 1.
+2. Apply K-Means for different values of K.
+3. Calculate inertia for each clustering result.
+4. Plot K values on the X-axis.
+5. Plot inertia values on the Y-axis.
+6. Identify the elbow point where the decrease in inertia becomes slower.
+7. Select the corresponding K value.
+
+In this practical: The program checks K values from 1 to 10 and plots their inertia values to identify a suitable number of clusters.
+
+### 4.6 Cluster Assignment
+
+After identifying the number of clusters, K-Means is applied again using K = 3.
+
+```
+kmeans = KMeans(n_clusters=3, random_state=42, n_init=10)df['Cluster'] = kmeans.fit_predict(X)
+```
+
+Explanation:
+
+| Parameter         | Description                                                                              |
+| ----------------- | ---------------------------------------------------------------------------------------- |
+| `n_clusters=3`    | Creates three clusters.                                                                  |
+| `random_state=42` | Ensures reproducible initialization.                                                     |
+| `n_init=10`       | Runs the algorithm with 10 different centroid initializations and keeps the best result. |
+| `fit_predict()`   | Fits the clustering model and returns the cluster label for each data point.             |
+
+Each data point is assigned a cluster label: 0, 1 or 2.
+
+Important: Cluster numbers are only labels. Cluster 0 is not necessarily better or lower-value than Cluster 1.
+
+### 4.7 Cluster Counts
+
+```
+print('Cluster Counts:')print(df['Cluster'].value_counts())
+```
+
+This statement displays the number of records assigned to each cluster.
+
+For example, the output may look like:
+
+```
+Cluster Counts:
+0    1200
+1     950
+2     680
+```
+
+These values are only illustrative. Actual cluster counts depend on the dataset and execution.
+
+It helps understand how the sales records are distributed among the three clusters.
+
+## 5. Advantages
+
+1. Simple and easy-to-implement clustering algorithm.
+2. Efficient for large datasets with numerical features.
+3. Groups similar data points automatically.
+4. Helps identify hidden patterns in sales data.
+5. Supports customer segmentation and market analysis.
+6. Results are easy to understand using cluster centroids.
+
+## 6. Disadvantages
+
+1. Number of clusters K must be selected in advance.
+2. Sensitive to the initial selection of centroids.
+3. Affected by outliers and noisy data.
+4. Requires numerical data for standard distance-based clustering.
+5. Performs poorly when clusters have irregular shapes or different densities.
+6. Results may change depending on feature selection and scaling.
+
+## 7. Applications
+
+1. Customer Segmentation: Dividing customers based on purchasing behavior and spending patterns.
+2. Market Analysis: Identifying different market segments for targeted marketing.
+3. Sales Analysis: Grouping sales records based on quantity, price and revenue.
+4. Product Grouping: Grouping similar products based on sales characteristics.
+5. Anomaly Detection: Identifying unusual records that differ from normal patterns.
+6. Business Strategy: Helping businesses make decisions using customer and sales patterns.
+
+## 8. Conclusion
+
+Thus, the K-Means Clustering algorithm was successfully implemented on the sales dataset to group similar sales records into three clusters. Numerical features were selected and standardized using StandardScaler. The Elbow Method was used to examine different cluster counts by calculating inertia, and the final model assigned each record to one of three clusters. The cluster counts were displayed to understand the distribution of records.
+
+## 9. Time and Space Complexity
+
+Let:
+
+- \\(N\\) = Number of data points.
+- \\(D\\) = Number of numerical features.
+- \\(K\\) = Number of clusters.
+- \\(I\\) = Number of iterations.
+
+### A. Time Complexity
+
+| Operation                  | Time Complexity                |
+| -------------------------- | ------------------------------ |
+| Data preprocessing         | \\(O(ND)\\), approximately     |
+| StandardScaler             | \\(O(ND)\\)                    |
+| Distance calculation       | \\(O(NKD)\\) per iteration     |
+| Centroid update            | \\(O(ND)\\) per iteration      |
+| K-Means clustering         | \\(O(I NKD)\\)                 |
+| Elbow Method (K = 1 to 10) | \\(O(10INKD)\\), approximately |
+| Cluster counting           | \\(O(N)\\)                     |
+
+Overall K-Means time complexity:
+
+\\[ \boxed{O(INKD)} \\]
+
+For the Elbow Method, K-Means is executed for multiple cluster values, so the total cost is approximately the sum of the costs for each tested K.
+
+### B. Space Complexity
+
+- Dataset storage: \\(O(ND)\\)
+- Centroid storage: \\(O(KD)\\)
+- Cluster labels: \\(O(N)\\)
+
+\\[ \boxed{O(ND+KD+N)} \\]
+
+### Practical Exam Answer
+
+- Time Complexity: \\(O(INKD)\\)
+- Space Complexity: \\(O(ND+KD+N)\\)
+
+Where N is the number of data points, K is the number of clusters, D is the number of features and I is the number of iterations.
+
+## 10. Important Viva Questions and Answers
+
+1\. What is clustering?
+
+Clustering is an unsupervised learning technique that groups similar data points into clusters.
+
+2\. What is K-Means?
+
+K-Means is an unsupervised algorithm that divides data into K clusters based on distance from cluster centroids.
+
+3\. Which type of machine learning is used?
+
+Unsupervised learning.
+
+4\. What is a centroid?
+
+A centroid is the mean position of all data points belonging to a particular cluster.
+
+5\. What is the purpose of K in K-Means?
+
+K specifies the number of clusters to be created.
+
+6\. What is the Elbow Method?
+
+It is a technique used to determine a suitable number of clusters by plotting inertia against different K values.
+
+7\. What is inertia?
+
+Inertia is the sum of squared distances between data points and their assigned cluster centroids.
+
+8\. Why is StandardScaler used?
+
+It standardizes numerical features so that large-valued features do not dominate distance calculations.
+
+9\. What is the purpose of `n_init=10`?
+
+It runs K-Means with ten different centroid initializations and selects the result with the lowest inertia.
+
+10\. What does `fit_predict()` do?
+
+It trains the clustering model and returns the cluster label assigned to each data point.
+
+11\. Why are order number and postal code removed?
+
+They are identifiers rather than meaningful numerical measurements for the chosen distance-based clustering task.
+
+12\. Is K-Means supervised or unsupervised?
+
+K-Means is an unsupervised learning algorithm.
+
+13\. Can K-Means work with categorical data?
+
+Standard K-Means requires numerical features. Categorical data needs suitable encoding or a different clustering algorithm.
+
+14\. What is the objective of K-Means?
+
+To minimize the within-cluster sum of squared distances between data points and their assigned centroids.
+
+15\. Why is K-Means sensitive to outliers?
+
+Because centroids are calculated using means, extreme values can significantly shift cluster centers.
+
+16\. What does `random_state=42` do?
+
+It ensures reproducibility by controlling random centroid initialization.
+
+17\. What is the difference between classification and clustering?
+
+Classification predicts predefined labels using labelled data, while clustering groups unlabelled data based on similarities.
+
+18\. Does Cluster 0 mean the best customers?
+
+No. Cluster labels are arbitrary and must be interpreted by examining the feature values of each cluster.
+
+## 11. Quick Revision Table
+
+| Concept             | Answer                            |
+| ------------------- | --------------------------------- |
+| Practical           | Customer/Sales Segmentation       |
+| Algorithm           | K-Means Clustering                |
+| Learning Type       | Unsupervised Learning             |
+| Problem Type        | Clustering                        |
+| Dataset             | sales_data_sample.csv             |
+| Encoding            | Latin-1                           |
+| Scaling             | StandardScaler                    |
+| Number of Clusters  | 3                                 |
+| Cluster Selection   | Elbow Method                      |
+| Evaluation Measure  | Inertia                           |
+| Initialization Runs | 10                                |
+| Output              | Cluster labels and cluster counts |
+| Time Complexity     | \\(O(INKD)\\)                     |
+| Space Complexity    | \\(O(ND+KD+N)\\)                  |
+
+Important practical point: The Elbow Method helps select a suitable K value by observing the reduction in inertia. In this program, the final number of clusters is explicitly set to 3. The elbow plot should be examined to verify whether 3 is a reasonable choice. Also, because the dataset contains sales transactions rather than one row per customer, this exact program clusters sales records; it does not necessarily produce customer-level segments.

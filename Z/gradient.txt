@@ -1,0 +1,353 @@
+cur_x = 2
+rate = 0.01
+precision = 0.000001
+previous_step_size = 1
+max_iters = 1000
+iters = 0
+df = lambda x: 2 * (x + 3)
+while previous_step_size > precision and iters < max_iters:
+    prev_x = cur_x
+    cur_x -= rate * df(prev_x)
+    previous_step_size = abs(prev_x - cur_x)
+    iters += 1
+print("Local Minima Occurs at:", cur_x)
+
+
+
+*****
+
+
+
+•ML-5: Implement the Gradient Descent algorithm to find the local minima of a function. For example, find the local minima of y = (x+3)² starting from x = 2.
+
+
+
+*****
+
+
+
+# ==============================================================================
+# SECTION 1: HYPERPARAMETERS & INITIALIZATION
+# ==============================================================================
+
+cur_x = 2               # Starting point of gradient descent (initial guess for x)
+rate = 0.01             # Learning rate (alpha/step size): controls how big each step is
+precision = 0.000001    # Convergence threshold: stops when the update step is smaller than this
+previous_step_size = 1  # Tracks change between consecutive x values (|x_new - x_old|); initialized > precision to start loop
+max_iters = 1000        # Safety limit to prevent infinite loops if the algorithm fails to converge
+iters = 0               # Iteration counter to track total steps taken
+
+
+# ==============================================================================
+# SECTION 2: OBJECTIVE FUNCTION DERIVATIVE
+# ==============================================================================
+
+# df is the first derivative (gradient) of the objective function f(x).
+# If f(x) = (x + 3)^2, then by power and chain rules:
+# f'(x) = 2 * (x + 3)
+# The theoretical minimum occurs where f'(x) = 0 => 2*(x + 3) = 0 => x = -3.
+df = lambda x: 2 * (x + 3)
+
+
+# ==============================================================================
+# SECTION 3: GRADIENT DESCENT LOOP
+# ==============================================================================
+
+# Loop continues until either:
+# 1. Convergence condition met: step size drops below precision threshold
+# 2. Iteration limit reached: iters hits max_iters
+while previous_step_size > precision and iters < max_iters:
+    prev_x = cur_x                          # Store current x before taking the update step
+    cur_x -= rate * df(prev_x)              # Update rule: x_new = x_old - (learning_rate * gradient)
+    previous_step_size = abs(prev_x - cur_x) # Calculate step size: |prev_x - cur_x| = rate * |df(prev_x)|
+    iters += 1                              # Increment iteration counter
+
+
+# ==============================================================================
+# SECTION 4: OUTPUT RESULTS
+# ==============================================================================
+
+# Prints the estimated x-value where the minimum of the function lies (approximating -3.0)
+print("Local Minima Occurs at:", cur_x)
+
+
+
+*****
+
+
+
+9. Time and Space Complexity
+Let \(I\) be the total number of iterations.
+Complexity	Value	Explanation
+Time Complexity	\(O(I)\)	Each iteration performs constant-time calculations.
+Space Complexity	\(O(1)\)	Only a fixed number of variables are stored.
+
+Since the maximum number of iterations is 1000, the algorithm performs at most 1000 iterations.
+
+
+
+*****
+
+
+
+# Gradient Descent Algorithm – Theory
+
+## 1. Aim
+
+To implement the Gradient Descent algorithm to find the local minimum of a function \\(y=(x+3)^2\\), starting from \\(x=2\\).
+
+## 2. Theory
+
+Gradient Descent is an optimization algorithm used to find the minimum value of a function by repeatedly updating the current value in the direction opposite to its gradient (derivative).
+
+It is commonly used in Machine Learning to minimize loss or cost functions.
+
+### Given function
+
+\\[ y=(x+3)^2 \\]
+
+Differentiate with respect to \\(x\\):
+
+\\[ \frac{dy}{dx}=2(x+3) \\]
+
+The derivative represents the slope of the function.
+
+At the minimum point:
+
+\\[ \frac{dy}{dx}=0 \\]
+
+\\[ 2(x+3)=0 \\]
+
+\\[ \boxed{x=-3} \\]
+
+Therefore, the minimum value of the function is:
+
+\\[ y=(-3+3)^2=\boxed{0} \\]
+
+## 3. Working of Gradient Descent
+
+The algorithm updates the current value using the formula:
+
+\\[ \boxed{x\_{new}=x\_{old}-\alpha f'(x)} \\]
+
+Where:
+
+- \\(x\_{new}\\): Updated value of x.
+- \\(x\_{old}\\): Previous value of x.
+- \\(\alpha\\): Learning rate.
+- \\(f'(x)\\): Derivative or gradient of the function.
+
+### Parameters used in the program
+
+| Parameter            | Value    | Purpose            |
+| -------------------- | -------- | ------------------ |
+| `cur_x`              | 2        | Initial value of x |
+| `rate`               | 0.01     | Learning rate      |
+| `precision`          | 0.000001 | Stopping tolerance |
+| `previous_step_size` | 1        | Initial step size  |
+| `max_iters`          | 1000     | Maximum iterations |
+| `iters`              | 0        | Iteration counter  |
+
+## 4. Explanation of Code
+
+1\. Initialize parameters
+
+```
+cur_x = 2rate = 0.01precision = 0.000001previous_step_size = 1max_iters = 1000iters = 0
+```
+
+Initializes the starting point, learning rate, precision and maximum iterations.
+
+2\. Define the derivative
+
+```
+df = lambda x: 2 * (x + 3)
+```
+
+Defines the derivative of the given function \\(y=(x+3)^2\\).
+
+3\. Apply the while loop
+
+```
+while previous_step_size > precision and iters < max_iters:
+```
+
+Repeats the process until the step size becomes sufficiently small or the maximum iteration limit is reached.
+
+4\. Store the previous value
+
+```
+prev_x = cur_x
+```
+
+Stores the current value before updating it.
+
+5\. Update x
+
+```
+cur_x -= rate * df(prev_x)
+```
+
+Updates x by moving in the opposite direction of the gradient.
+
+6\. Calculate step size
+
+```
+previous_step_size = abs(prev_x - cur_x)
+```
+
+Calculates the absolute difference between the previous and updated values.
+
+7\. Increment iteration
+
+```
+iters += 1
+```
+
+Increases the iteration counter by one.
+
+8\. Display result
+
+```
+print("Local Minima Occurs at:", cur_x)
+```
+
+Displays the approximate x-coordinate of the minimum point.
+
+## 5. Example Working
+
+Initially:
+
+\\[ x=2,\quad \alpha=0.01 \\]
+
+Derivative:
+
+\\[ f'(2)=2(2+3)=10 \\]
+
+First update:
+
+\\[ x\_{new}=2-(0.01\times10) \\]
+
+\\[ x\_{new}=1.9 \\]
+
+Second update:
+
+\\[ f'(1.9)=2(1.9+3)=9.8 \\]
+
+\\[ x\_{new}=1.9-(0.01\times9.8) \\]
+
+\\[ x\_{new}=1.802 \\]
+
+The same process continues until the step size becomes smaller than the specified precision.
+
+Expected result
+
+\\[ \boxed{x\approx -3} \\]
+
+\\[ \boxed{y\_{\min}\approx 0} \\]
+
+The program prints the approximate minimum x-coordinate, not the minimum y-value.
+
+## 6. Advantages
+
+1. Simple and easy-to-implement optimization algorithm.
+2. Requires less memory for storing intermediate values.
+3. Useful for minimizing complex loss functions in machine learning.
+4. Can handle functions with many input variables.
+5. Iteratively improves the solution towards the minimum.
+
+## 7. Disadvantages
+
+1. Performance depends heavily on the selected learning rate.
+2. May converge slowly when the learning rate is very small.
+3. Large learning rates may cause overshooting or divergence.
+4. Can get stuck at local minima in non-convex functions.
+5. Requires a differentiable objective function for standard gradient-based updates.
+
+## 8. Applications
+
+1. Training artificial neural networks and deep learning models.
+2. Minimizing loss functions in machine learning.
+3. Linear and logistic regression optimization.
+4. Image recognition and classification models.
+5. Parameter optimization in artificial intelligence.
+
+## 9. Time and Space Complexity
+
+Let \\(I\\) be the total number of iterations.
+
+| Complexity       | Value      | Explanation                                         |
+| ---------------- | ---------- | --------------------------------------------------- |
+| Time Complexity  | \\(O(I)\\) | Each iteration performs constant-time calculations. |
+| Space Complexity | \\(O(1)\\) | Only a fixed number of variables are stored.        |
+
+Since the maximum number of iterations is 1000, the algorithm performs at most 1000 iterations.
+
+## 10. Conclusion
+
+Thus, the Gradient Descent algorithm successfully finds the approximate minimum of the function \\(y=(x+3)^2\\), starting from \\(x=2\\), using iterative gradient-based updates.
+
+## 11. Viva Questions and Answers
+
+1\. What is Gradient Descent?
+
+It is an optimization algorithm used to minimize a function by updating parameters opposite to the gradient.
+
+2\. What is the learning rate?
+
+It controls the size of each update made during optimization.
+
+3\. What is a gradient?
+
+A gradient represents the direction and rate of the steepest increase of a function.
+
+4\. Why do we subtract the derivative?
+
+Subtracting the derivative moves the parameter in the direction of decreasing function value.
+
+5\. What is the derivative of the given function?
+
+\\[ f'(x)=2(x+3) \\]
+
+6\. What is the minimum point?
+
+The minimum occurs at \\(x=-3\\), where \\(y=0\\).
+
+7\. What happens if the learning rate is too high?
+
+The algorithm may overshoot the minimum or fail to converge.
+
+8\. What is the purpose of precision?
+
+It determines when the algorithm should stop based on the size of the update.
+
+9\. What is the purpose of `max_iters`?
+
+It prevents the algorithm from running indefinitely.
+
+10\. Is Gradient Descent a greedy algorithm?
+
+No. It is an iterative optimization algorithm based on gradients.
+
+11\. What is the time complexity?
+
+\\(O(I)\\), where I is the number of iterations.
+
+12\. What is the space complexity?
+
+\\(O(1)\\), because it uses a constant amount of extra memory.
+
+## Quick Revision
+
+| Concept          | Answer                 |
+| ---------------- | ---------------------- |
+| Algorithm        | Gradient Descent       |
+| Function         | \\(y=(x+3)^2\\)        |
+| Initial x        | 2                      |
+| Derivative       | \\(2(x+3)\\)           |
+| Learning rate    | 0.01                   |
+| Minimum x        | -3                     |
+| Minimum y        | 0                      |
+| Time complexity  | \\(O(I)\\)             |
+| Space complexity | \\(O(1)\\)             |
+| Type             | Optimization algorithm |

@@ -1,0 +1,758 @@
+#include <iostream>
+#include <algorithm>
+#include <iomanip>
+#include <vector>
+using namespace std;
+
+struct Item {
+    int weight, profit;
+    double ratio;
+};
+
+bool compare(Item a, Item b) {
+    return a.ratio > b.ratio;
+}
+
+int main() {
+    int n, capacity;
+    double totalProfit = 0;
+
+    cout << "Enter number of items: ";
+    cin >> n;
+
+    if (n <= 0) {
+        cout << "Invalid number of items.";
+        return 0;
+    }
+
+    vector<Item> items(n);
+
+    for (int i = 0; i < n; i++) {
+        cout << "Enter weight and profit of item "
+             << i + 1 << ": ";
+        cin >> items[i].weight >> items[i].profit;
+
+        if (items[i].weight <= 0 || items[i].profit < 0) {
+            cout << "Invalid weight or profit.";
+            return 0;
+        }
+
+        items[i].ratio =
+            (double)items[i].profit / items[i].weight;
+    }
+
+    cout << "Enter knapsack capacity: ";
+    cin >> capacity;
+
+    if (capacity < 0) {
+        cout << "Invalid capacity.";
+        return 0;
+    }
+
+    sort(items.begin(), items.end(), compare);
+
+    cout << fixed << setprecision(2);
+    cout << "\nSelected Items:\n";
+
+    for (int i = 0; i < n; i++) {
+        if (capacity == 0)
+            break;
+
+        if (items[i].weight <= capacity) {
+            capacity -= items[i].weight;
+            totalProfit += items[i].profit;
+
+            cout << "Weight Taken: " << items[i].weight
+                 << ", Profit: " << items[i].profit << "\n";
+        }
+        else {
+            double fraction =
+                (double)capacity / items[i].weight;
+
+            double profitEarned =
+                items[i].profit * fraction;
+
+            cout << "Weight Taken: " << capacity
+                 << ", Profit: " << profitEarned << "\n";
+
+            totalProfit += profitEarned;
+            capacity = 0;
+        }
+    }
+
+    cout << "\nMaximum Profit: " << totalProfit << endl;
+
+    return 0;
+}
+
+
+
+
+*****
+•DAA-4: Write a program to solve a fractional Knapsack problem using a greedy method
+g++ name.cpp -o output
+./output
+
+
+#include <iostream>
+#include <algorithm>
+#include <iomanip>
+#include <vector>
+using namespace std;
+
+// ==========================================
+// 1. Item Structure Definition
+// ==========================================
+// Represents each item with its weight, profit, and profit-to-weight ratio
+struct Item {
+    int weight;     // Weight of the item
+    int profit;     // Profit/value earned by taking the item
+    double ratio;   // Profit per unit weight: profit / weight
+};
+
+// ==========================================
+// 2. Custom Comparator for Greedy Strategy
+// ==========================================
+// Sorts items in descending order of profit-to-weight ratio.
+// Higher ratio means more value per unit of weight capacity consumed.
+bool compare(Item a, Item b) {
+    return a.ratio > b.ratio;
+}
+
+int main() {
+    int n, capacity;
+    double totalProfit = 0; // Accumulates maximum profit (double to support fractional values)
+
+    // Step 1: Input total number of items
+    cout << "Enter number of items: ";
+    cin >> n;
+
+    // Input validation: Must have at least 1 item
+    if (n <= 0) {
+        cout << "Invalid number of items.";
+        return 0;
+    }
+
+    vector<Item> items(n);
+
+    // Step 2: Input weight and profit for each item
+    for (int i = 0; i < n; i++) {
+        cout << "Enter weight and profit of item "
+             << i + 1 << ": ";
+        cin >> items[i].weight >> items[i].profit;
+
+        // Input validation: Weight must be positive, profit cannot be negative
+        if (items[i].weight <= 0 || items[i].profit < 0) {
+            cout << "Invalid weight or profit.";
+            return 0;
+        }
+
+        // Calculate unit value (profit per unit weight) using explicit type casting
+        items[i].ratio =
+            (double)items[i].profit / items[i].weight;
+    }
+
+    // Step 3: Input the maximum weight capacity of the knapsack
+    cout << "Enter knapsack capacity: ";
+    cin >> capacity;
+
+    // Input validation: Knapsack capacity cannot be negative
+    if (capacity < 0) {
+        cout << "Invalid capacity.";
+        return 0;
+    }
+
+    // Step 4: GREEDY STEP - Sort items descending by profit/weight ratio
+    // Runs in O(n log n) time
+    sort(items.begin(), items.end(), compare);
+
+    // Format floating-point outputs to 2 decimal places
+    cout << fixed << setprecision(2);
+    cout << "\nSelected Items:\n";
+
+    // Step 5: KNAPSACK FILLING - Iterate through sorted items
+    for (int i = 0; i < n; i++) {
+        // If no capacity remains, stop early
+        if (capacity == 0)
+            break;
+
+        // Case A: The whole item fits into the remaining capacity
+        if (items[i].weight <= capacity) {
+            capacity -= items[i].weight;      // Deduct item weight from knapsack capacity
+            totalProfit += items[i].profit;   // Add entire item profit
+
+            cout << "Weight Taken: " << items[i].weight
+                 << ", Profit: " << items[i].profit << "\n";
+        }
+        // Case B: Item exceeds remaining capacity -> Take the optimal fraction
+        else {
+            // Fraction of item that fits into the remaining capacity
+            double fraction =
+                (double)capacity / items[i].weight;
+
+            // Proportional profit earned from this fractional weight
+            double profitEarned =
+                items[i].profit * fraction;
+
+            cout << "Weight Taken: " << capacity
+                 << ", Profit: " << profitEarned << "\n";
+
+            totalProfit += profitEarned; // Add fractional profit
+            capacity = 0;                // Knapsack is now completely full
+        }
+    }
+
+    // Step 6: Print final accumulated maximum profit
+    cout << "\nMaximum Profit: " << totalProfit << endl;
+
+    return 0;
+}
+
+
+
+*****
+
+
+
+Time Complexity: O(n log n)
+Space Complexity: O(n)
+
+
+
+*****
+
+
+
+
+# Practical: Fractional Knapsack Problem Using Greedy Algorithm
+
+## 1. Aim
+
+To write a C++ program to solve the Fractional Knapsack Problem using the Greedy Method and maximize the total profit by selecting items based on their profit-to-weight ratio.
+
+## 2. Theory
+
+### What is the Knapsack Problem?
+
+The Knapsack Problem is an optimization problem in which a person has a bag (knapsack) with a limited weight capacity and a collection of items.
+
+Each item has:
+
+- Weight: The amount of space or capacity occupied by an item.
+- Profit: The value earned by selecting an item.
+- Capacity: The maximum weight that the knapsack can hold.
+
+The objective is to select items in such a way that the total profit is maximized without exceeding the knapsack capacity.
+
+### What is Fractional Knapsack?
+
+Fractional Knapsack is a type of Knapsack Problem in which items can be divided into smaller fractions.
+
+This means we can select:
+
+- The complete item.
+- A fraction of an item.
+- Multiple items until the knapsack becomes full.
+
+The main objective is to maximize the total profit within the given capacity.
+
+### 3. Greedy Algorithm
+
+The Fractional Knapsack Problem is solved using the Greedy Algorithm.
+
+A Greedy Algorithm makes the best possible choice at each step to achieve an optimal solution.
+
+Greedy strategy used:
+
+Select items according to their profit-to-weight ratio in descending order.
+
+The formula is:
+
+\\[ Ratio=\frac{Profit}{Weight} \\]
+
+- Items with higher ratios are selected first.
+- If the complete item fits, take the entire item.
+- If the item does not fit completely, take only the required fraction.
+- Stop when the knapsack becomes full.
+
+## 4. Difference Between 0/1 and Fractional Knapsack
+
+| 0/1 Knapsack                               | Fractional Knapsack                      |
+| ------------------------------------------ | ---------------------------------------- |
+| Items cannot be divided.                   | Items can be divided into fractions.     |
+| Complete item is selected or rejected.     | Partial items can be selected.           |
+| Greedy method is not always optimal.       | Greedy method gives an optimal solution. |
+| Commonly solved using Dynamic Programming. | Commonly solved using Greedy Algorithm.  |
+| More complex optimization.                 | Comparatively simpler optimization.      |
+
+## 5. Example
+
+Consider the following items:
+
+| Item | Weight | Profit | Profit/Weight Ratio |
+| ---- | ------ | ------ | ------------------- |
+| A    | 10     | 60     | 6                   |
+| B    | 20     | 100    | 5                   |
+| C    | 30     | 120    | 4                   |
+
+Knapsack Capacity = 50
+
+### Step 1: Calculate Profit-to-Weight Ratio
+
+For each item:
+
+\\[ Ratio=\frac{Profit}{Weight} \\]
+
+- Item A = 60/10 = 6
+- Item B = 100/20 = 5
+- Item C = 120/30 = 4
+
+### Step 2: Sort Items
+
+Arrange items in descending order of their ratios.
+
+| Item | Weight | Profit | Ratio |
+| ---- | ------ | ------ | ----- |
+| A    | 10     | 60     | 6     |
+| B    | 20     | 100    | 5     |
+| C    | 30     | 120    | 4     |
+
+### Step 3: Select Items
+
+Item A:
+
+- Weight = 10
+- Capacity available = 50
+- Take the complete item.
+- Profit = 60
+- Remaining capacity = 40
+
+Item B:
+
+- Weight = 20
+- Capacity available = 40
+- Take the complete item.
+- Profit = 100
+- Remaining capacity = 20
+
+Item C:
+
+- Weight = 30
+- Remaining capacity = 20
+- The complete item cannot fit.
+- Take a fraction of the item.
+
+Fraction selected:
+
+\\[ Fraction=\frac{20}{30}=0.667 \\]
+
+Profit earned:
+
+\\[ 120\times\frac{20}{30}=80 \\]
+
+### Step 4: Calculate Maximum Profit
+
+\\[ TotalProfit=60+100+80 \\]
+
+\\[ \boxed{TotalProfit=240} \\]
+
+Final Knapsack Selection
+
+Item A
+
+100% selected
+
+Item B
+
+100% selected
+
+Item C
+
+66.67% selected
+
+Total weight
+
+50 units
+
+Maximum profit
+
+# 240
+
+## 6. Algorithm
+
+1. Start the program.
+2. Read the number of items.
+3. Read the weight and profit of each item.
+4. Calculate the profit-to-weight ratio for every item.
+5. Read the knapsack capacity.
+6. Sort all items in descending order of their ratios.
+7. Select the item having the highest ratio.
+8. If the complete item fits, add its weight and profit to the knapsack.
+9. Otherwise, calculate the fraction that can fit and add the corresponding profit.
+10. Repeat until the knapsack becomes full or all items are considered.
+11. Display the maximum profit.
+12. Stop the program.
+
+## 7. Explanation of Important Code Statements
+
+### A. Item Structure
+
+```
+struct Item {
+    int weight, profit;
+    double ratio;
+};
+```
+
+This structure stores the weight, profit and profit-to-weight ratio of each item.
+
+### B. Comparator Function
+
+```
+bool compare(Item a, Item b) {
+    return a.ratio > b.ratio;
+}
+```
+
+It compares two items and sorts them in descending order of their profit-to-weight ratios.
+
+### C. Calculating Profit-to-Weight Ratio
+
+```
+items[i].ratio =
+    (double)items[i].profit / items[i].weight;
+```
+
+It calculates the profit earned per unit of weight for each item.
+
+Why is `double` used?
+
+Because the ratio may contain decimal values, so double provides better precision than an integer.
+
+### D. Sorting Items
+
+```
+sort(items.begin(), items.end(), compare);
+```
+
+It arranges all items according to their profit-to-weight ratio, from highest to lowest.
+
+### E. Selecting Complete Items
+
+```
+if (items[i].weight <= capacity) {
+    capacity -= items[i].weight;
+    totalProfit += items[i].profit;
+}
+```
+
+If the item's weight is less than or equal to the remaining capacity, the complete item is selected.
+
+Its weight is subtracted from the capacity, and its profit is added to the total profit.
+
+### F. Selecting Fractional Items
+
+```
+double fraction =
+    (double)capacity / items[i].weight;
+
+double profitEarned =
+    items[i].profit * fraction;
+```
+
+If the complete item cannot fit, the program calculates the fraction that can fit and obtains the corresponding profit.
+
+### G. Displaying Maximum Profit
+
+```
+cout << "\nMaximum Profit: " << totalProfit << endl;
+```
+
+It displays the total profit earned from all selected complete and fractional items.
+
+## 8. Time and Space Complexity
+
+Let:
+
+- n = Number of items.
+- C = Knapsack capacity.
+
+### Time Complexity
+
+| Operation          | Complexity |
+| ------------------ | ---------- |
+| Reading items      | O(n)       |
+| Calculating ratios | O(n)       |
+| Sorting items      | O(n log n) |
+| Selecting items    | O(n)       |
+| Displaying result  | O(n)       |
+
+Overall Time Complexity:
+
+\\[ \boxed{O(n\log n)} \\]
+
+Sorting takes the maximum time, making it the dominant operation.
+
+### Space Complexity
+
+- Items vector requires O(n) space.
+- Only a constant number of extra variables are used.
+
+\\[ \boxed{O(n)} \\]
+
+## 9. Applications of Fractional Knapsack
+
+1. Resource Allocation: Distributing limited resources to activities that provide maximum returns.
+2. Investment Planning: Allocating available funds among opportunities based on their expected returns per unit.
+3. Cargo Loading: Selecting goods for transportation based on value and available capacity.
+4. Budget Optimization: Distributing limited budgets among projects to maximize benefits.
+5. Manufacturing: Selecting materials based on their value and storage or production constraints.
+6. Network Bandwidth: Allocating limited bandwidth to data transfers based on their priorities and benefits.
+
+## 10. Advantages
+
+1. Uses a simple and easy-to-understand Greedy Algorithm.
+2. Produces an optimal solution for the Fractional Knapsack Problem.
+3. Maximizes profit within the given capacity.
+4. Allows partial selection of items.
+5. Requires less computational time compared to many exhaustive approaches.
+6. Efficiently handles large numbers of items using sorting.
+
+## 11. Disadvantages
+
+1. Assumes that items can be divided into smaller fractions.
+2. Cannot be directly used for indivisible items.
+3. Requires weight and profit information for every item.
+4. Greedy selection may not provide an optimal solution for 0/1 Knapsack.
+5. Sorting introduces additional computational overhead.
+6. May not represent real-world situations where items cannot be divided.
+
+## 12. Conclusion
+
+Thus, the Fractional Knapsack Problem was successfully implemented using the Greedy Algorithm in C++. Items were sorted according to their profit-to-weight ratios, and complete or fractional items were selected based on the available capacity. The maximum possible profit was calculated without exceeding the knapsack capacity.
+
+# 13. Important Viva Questions and Answers
+
+1\. What is the Knapsack Problem?
+
+It is an optimization problem in which items are selected to maximize profit without exceeding the given capacity.
+
+2\. What is Fractional Knapsack?
+
+It is a problem in which items can be divided into fractions to maximize total profit.
+
+3\. Which algorithm is used in Fractional Knapsack?
+
+Greedy Algorithm.
+
+4\. What is the greedy strategy used here?
+
+Select items in descending order of their profit-to-weight ratio.
+
+5\. What is the formula for calculating the ratio?
+
+\\[ Ratio=\frac{Profit}{Weight} \\]
+
+6\. What happens when an item cannot fit completely?
+
+The required fraction of that item is selected to fill the remaining capacity.
+
+7\. What is the time complexity?
+
+O(n log n), because sorting is the dominant operation.
+
+8\. What is the space complexity?
+
+O(n), because the program stores n items in a vector.
+
+9\. What is the difference between Fractional and 0/1 Knapsack?
+
+Fractional Knapsack allows partial selection, whereas 0/1 Knapsack allows only complete selection or rejection.
+
+10\. Why is sorting required?
+
+Sorting helps select items with the highest profit per unit of weight first.
+
+11\. Why is the Greedy Algorithm optimal for Fractional Knapsack?
+
+Because selecting the highest profit-to-weight ratio first maximizes the profit for every unit of available capacity.
+
+12\. Why is `double` used for the ratio?
+
+Because the profit-to-weight ratio can contain decimal values.
+
+13\. What is the purpose of the comparator function?
+
+It arranges items in decreasing order of their profit-to-weight ratios.
+
+14\. Can we use Greedy Algorithm for 0/1 Knapsack?
+
+Greedy selection based on profit-to-weight ratio does not always give an optimal solution for 0/1 Knapsack. Dynamic Programming is commonly used.
+
+15\. What happens if the knapsack capacity is zero?
+
+No items are selected, and the maximum profit remains zero.
+
+16\. What is an optimization problem?
+
+An optimization problem aims to find the best possible solution by maximizing or minimizing an objective function.
+
+17\. What is the purpose of `setprecision(2)`?
+
+It displays floating-point values up to two decimal places when used with `fixed`.
+
+18\. Why is a vector used?
+
+A vector dynamically stores the items based on the number of items entered by the user.
+
+19\. What is the objective function of Fractional Knapsack?
+
+To maximize the total profit:
+
+\\[ Maximize\quad \sum\_{i=1}^{n}p_ix_i \\]
+
+Subject to:
+
+\\[ \sum\_{i=1}^{n}w_ix_i\leq C \\]
+
+Where \\(0\leq x_i\leq1\\).
+
+20\. Is Fractional Knapsack a real-world optimization problem?
+
+Yes, it models resource allocation, cargo loading, budget distribution and other capacity-based optimization problems.
+
+Important practical viva points
+
+| Topic             | Answer                            |
+| ----------------- | --------------------------------- |
+| Algorithm         | Greedy                            |
+| Strategy          | Highest profit/weight ratio first |
+| Formula           | Profit ÷ Weight                   |
+| Sorting order     | Descending                        |
+| Partial selection | Allowed                           |
+| Time complexity   | O(n log n)                        |
+| Space complexity  | O(n)                              |
+| Objective         | Maximize total profit             |
+| Optimal for       | Fractional Knapsack               |
+
+Important difference to remember for your viva:
+
+- Fractional Knapsack → Greedy Algorithm → O(n log n).
+- 0/1 Knapsack → Dynamic Programming → commonly O(n × C).
+
+The biggest concept to explain confidently is why we select the highest profit-to-weight ratio first and why we take only a fraction when the remaining capacity is insufficient.
+
+
+
+
+*****
+
+
+
+The main difference between Fractional Knapsack and 0/1 Knapsack is whether we can divide an item into smaller parts or not.
+
+## 1. Difference Between Fractional and 0/1 Knapsack
+
+| Parameter        | Fractional Knapsack                | 0/1 Knapsack                                  |
+| ---------------- | ---------------------------------- | --------------------------------------------- |
+| Item selection   | Items can be divided.              | Items cannot be divided.                      |
+| Selection        | Full or partial item.              | Full item or no item.                         |
+| Algorithm        | Greedy Algorithm.                  | Dynamic Programming (commonly).               |
+| Strategy         | Highest profit/weight ratio first. | Considers combinations of items.              |
+| Optimality       | Greedy gives optimal solution.     | Greedy does not always give optimal solution. |
+| Time complexity  | O(n log n).                        | O(n × C) using DP.                            |
+| Space complexity | O(n).                              | O(n × C) for standard DP table.               |
+| Flexibility      | Allows fractional selection.       | Allows only 0 or 1 selection.                 |
+
+## 2. Example to Understand the Difference
+
+Suppose we have:
+
+\- Knapsack capacity = 50 kg.
+
+| Item | Weight | Profit | Ratio |
+| ---- | ------ | ------ | ----- |
+| A    | 10 kg  | ₹60    | 6     |
+| B    | 20 kg  | ₹100   | 5     |
+| C    | 30 kg  | ₹120   | 4     |
+
+### A. Fractional Knapsack
+
+We can divide items into fractions.
+
+1. Select complete Item A (10 kg) → Profit ₹60.
+2. Select complete Item B (20 kg) → Profit ₹100.
+3. Only 20 kg capacity remains, so take 20/30 fraction of Item C → Profit ₹80.
+
+Fractional Knapsack
+
+# ₹240
+
+Total profit
+
+A = 100%, B = 100%, C = 66.67%
+
+### B. 0/1 Knapsack
+
+We cannot divide any item. We must either select the complete item or reject it.
+
+Possible selections:
+
+| Selected items | Total weight | Total profit |
+| -------------- | ------------ | ------------ |
+| A + B          | 30 kg        | ₹160         |
+| A + C          | 40 kg        | ₹180         |
+| B + C          | 50 kg        | ₹220         |
+| A + B + C      | 60 kg        | Not allowed  |
+
+0/1 Knapsack
+
+# ₹220
+
+Total profit
+
+Select B + C completely.
+
+## 3. Why Are Different Algorithms Used?
+
+Fractional Knapsack – Greedy Algorithm
+
+- Select the item with the highest profit-to-weight ratio.
+- Take the complete item if possible.
+- Otherwise, take the required fraction.
+- This approach always gives an optimal solution for fractional knapsack.
+
+0/1 Knapsack – Dynamic Programming
+
+- Each item has only two choices: select (1) or reject (0).
+- We consider different combinations of items.
+- Dynamic Programming stores previously calculated results to avoid repeated calculations.
+- Greedy selection based only on profit-to-weight ratio may give a suboptimal answer.
+
+## 4. Important Viva Questions
+
+Q1. Why is Fractional Knapsack called Fractional?
+
+Because items can be divided into smaller portions, and partial quantities can be selected.
+
+Q2. Why is 0/1 Knapsack called 0/1?
+
+Because each item has only two possibilities: 0 means not selected and 1 means completely selected.
+
+Q3. Can we use Greedy Algorithm for 0/1 Knapsack?
+
+We can use it as a heuristic, but it does not guarantee the optimal solution.
+
+Q4. Which problem is easier to solve?
+
+Fractional Knapsack is comparatively easier because the Greedy Algorithm provides an optimal solution.
+
+Q5. What is the main difference in one sentence?
+
+Fractional Knapsack allows partial selection of items using Greedy Algorithm, whereas 0/1 Knapsack allows only complete selection or rejection and is commonly solved using Dynamic Programming.
+
+Remember for practical exam
+
+Fractional = Divide items = Greedy
+
+0/1 = Take or leave = Dynamic Programming
